@@ -3,14 +3,12 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
-const WEDDING_DATE = new Date(process.env.NEXT_PUBLIC_WEDDING_DATE || "2025-12-31T15:00:00");
-
 function pad(n: number) {
   return String(n).padStart(2, "0");
 }
 
-function getTimeLeft() {
-  const diff = WEDDING_DATE.getTime() - Date.now();
+function getTimeLeft(weddingDate: string) {
+  const diff = new Date(weddingDate).getTime() - Date.now();
   if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
   return {
     days:    Math.floor(diff / (1000 * 60 * 60 * 24)),
@@ -51,13 +49,13 @@ function Sep() {
   );
 }
 
-export default function Countdown() {
-  const [time, setTime] = useState(getTimeLeft);
+export default function Countdown({ weddingDate }: { weddingDate: string }) {
+  const [time, setTime] = useState(() => getTimeLeft(weddingDate));
 
   useEffect(() => {
-    const id = setInterval(() => setTime(getTimeLeft()), 1000);
+    const id = setInterval(() => setTime(getTimeLeft(weddingDate)), 1000);
     return () => clearInterval(id);
-  }, []);
+  }, [weddingDate]);
 
   return (
     <div className="flex items-end gap-3 md:gap-5">

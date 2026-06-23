@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Users, Image, CheckCircle, XCircle, Clock, Heart } from "lucide-react";
+import { Users, Image, CheckCircle, XCircle, Clock, Heart, FileText } from "lucide-react";
 
 interface RsvpItem {
   id: number;
@@ -71,7 +71,7 @@ export default function AdminPage() {
         </div>
 
         {/* Navigation rapide */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
           <Link href="/admin/rsvp">
             <motion.div
               initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
@@ -99,6 +99,22 @@ export default function AdminPage() {
               <div>
                 <h3 className="font-heading text-2xl text-white">Modération Galerie</h3>
                 <p className="text-sm text-blue-300">Approuver ou refuser les photos invités</p>
+              </div>
+              <span className="ml-auto text-blue-300 group-hover:text-white transition-colors">→</span>
+            </motion.div>
+          </Link>
+
+          <Link href="/admin/content">
+            <motion.div
+              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+              className="bg-white/5 border border-white/10 rounded-2xl p-6 flex items-center gap-4 hover:bg-white/10 transition-colors cursor-pointer group"
+            >
+              <div className="w-12 h-12 rounded-full bg-[#F4A7B9]/20 flex items-center justify-center">
+                <FileText className="w-6 h-6 text-[#F4A7B9]" />
+              </div>
+              <div>
+                <h3 className="font-heading text-2xl text-white">Contenu du site</h3>
+                <p className="text-sm text-blue-300">Dates, lieux, FAQ, photos — sans coder</p>
               </div>
               <span className="ml-auto text-blue-300 group-hover:text-white transition-colors">→</span>
             </motion.div>

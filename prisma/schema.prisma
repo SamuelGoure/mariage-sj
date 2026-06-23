@@ -66,3 +66,11 @@ model AdminUser {
 
   @@map("admin_users")
 }
+
+model ContentSection {
+  key       String   @id @db.VarChar(50)
+  data      Json
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("content_sections")
+}

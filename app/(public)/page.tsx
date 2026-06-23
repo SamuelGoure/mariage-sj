@@ -4,6 +4,10 @@ import { Heart, MapPin, Clock, Music, Sparkles } from "lucide-react";
 import Countdown from "@/components/home/Countdown";
 import FadeIn from "@/components/home/FadeIn";
 import { RingsIcon, FloralDivider, FloralCorner, HeartBeat, WaveDivider } from "@/components/ui/decorations";
+import { getGeneral } from "@/lib/content";
+import { formatLongDateFr, formatDeadlineFr } from "@/lib/utils";
+
+export const dynamic = "force-dynamic";
 
 const highlights = [
   {
@@ -29,7 +33,12 @@ const highlights = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const general = await getGeneral();
+  const names = general.nameOrder.map((role) => (role === "bride" ? general.brideName : general.groomName));
+  const weddingDateText = formatLongDateFr(general.weddingDate);
+  const rsvpDeadlineText = formatDeadlineFr(general.rsvpDeadline);
+
   return (
     <>
       {/* ── HERO ──────────────────────────────────────────────── */}
@@ -65,7 +74,7 @@ export default function HomePage() {
             </FadeIn>
             <FadeIn direction="up" delay={0.3}>
               <h1 className="font-heading text-6xl md:text-8xl lg:text-9xl font-light text-white leading-none">
-                Stéphane
+                {names[0]}
               </h1>
             </FadeIn>
             <FadeIn direction="none" delay={0.45}>
@@ -73,7 +82,7 @@ export default function HomePage() {
             </FadeIn>
             <FadeIn direction="up" delay={0.4}>
               <h1 className="font-heading text-6xl md:text-8xl lg:text-9xl font-light text-white leading-none">
-                Josiane
+                {names[1]}
               </h1>
             </FadeIn>
           </div>
@@ -81,11 +90,11 @@ export default function HomePage() {
           {/* Date & Lieu */}
           <FadeIn direction="up" delay={0.6} className="flex flex-col items-center gap-2 mt-1">
             <p className="font-heading text-2xl md:text-3xl italic text-[#F4A7B9]">
-              Le 31 Décembre 2026
+              Le {weddingDateText}
             </p>
             <div className="flex items-center gap-2 text-white/70 text-sm">
               <MapPin className="w-4 h-4" />
-              <span>Orsay, Île-de-France</span>
+              <span>{general.venueShortName}</span>
             </div>
           </FadeIn>
         </div>
@@ -116,7 +125,7 @@ export default function HomePage() {
             </h2>
           </FadeIn>
           <FadeIn delay={0.1}>
-            <Countdown />
+            <Countdown weddingDate={general.weddingDate} />
           </FadeIn>
           <FadeIn delay={0.2} className="flex flex-col items-center gap-3">
             <HeartBeat className="w-44 h-12 opacity-70" />
@@ -124,7 +133,7 @@ export default function HomePage() {
           </FadeIn>
           <FadeIn delay={0.25}>
             <p className="text-white/35 text-xs uppercase tracking-[0.3em]">
-              31 Décembre 2026 · Orsay, Île-de-France
+              {weddingDateText} · {general.venueShortName}
             </p>
           </FadeIn>
         </div>
@@ -237,7 +246,7 @@ export default function HomePage() {
             <p className="text-white/70 text-base leading-relaxed">
               Votre présence sera le plus beau cadeau que vous puissiez nous offrir.
               Merci de confirmer votre venue avant le{" "}
-              <strong className="text-[#F4A7B9]">1er décembre 2026</strong>.
+              <strong className="text-[#F4A7B9]">{rsvpDeadlineText}</strong>.
             </p>
           </FadeIn>
           <FadeIn delay={0.3} className="flex flex-col items-center gap-3">

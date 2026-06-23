@@ -65,7 +65,57 @@ docker compose down                       # arrête tout (ajouter -v pour suppri
 
 ### À faire avant un vrai déploiement
 
-- ⚠️ **Aucune migration Prisma n'existe encore** (`prisma/migrations` est vide). Il faut lancer une fois `npx prisma migrate dev --name init` contre une base de dev, committer le résultat, puis utiliser le service `migrate` en prod.
 - Préparer le `.env` réel sur le VPS (voir `.env.example` pour la liste des variables) — ne jamais transmettre les vraies valeurs par chat non chiffré.
+- Renseigner les vraies clés **Cloudinary** dans le `.env` du VPS (voir section suivante) — sans elles, l'upload d'images dans le dashboard échoue.
+- Créer le premier compte admin en prod via `npx tsx scripts/create-admin.ts --email=... --password=...` (voir section suivante).
 - Décider avec le frère du mode de transfert du code vers le VPS (repo Git distant à créer, ou rsync/scp) et de la mise en place d'un reverse proxy (nginx/Caddy + HTTPS) devant le port 3000.
 - Clé SSH dédiée générée pour l'accès au VPS : `~/.ssh/mariage` (privée, à ne jamais partager) / `~/.ssh/mariage.pub` (publique, transmise au frère pour `authorized_keys`).
+
+## Authentification & Dashboard de contenu (CMS léger)
+
+Avant, tout le texte du site (dates, lieux, FAQ, photos de la galerie) était codé en dur dans le JSX — il fallait modifier le code et redéployer pour le moindre changement. Le dashboard admin (`/admin/content`) permet maintenant de modifier ce contenu sans toucher au code, avec effet immédiat sur le site public (pas de rebuild nécessaire).
+
+### Fichiers ajoutés
+
+- **Authentification** (NextAuth, Credentials + bcrypt) :
+  - `lib/auth.ts` — config NextAuth, vérifie email + mot de passe contre la table `AdminUser`
+  - `app/api/auth/[...nextauth]/route.ts` — handler NextAuth
+  - `proxy.ts` (racine du projet) — protège `/admin/*` et `/api/admin/*` ; redirige vers `/admin/login` si non connecté (Next.js 16 a renommé `middleware.ts` → `proxy.ts`)
+  - `app/admin/login/page.tsx` — page de connexion
+  - `scripts/create-admin.ts` — crée/réinitialise un compte admin
+  - `app/admin/(dashboard)/` — toutes les pages admin existantes (Dashboard, RSVP, Invités, Galerie) déplacées dans ce groupe de routes pour partager la nav (`components/admin/AdminNav.tsx`) sans l'imposer à la page de login
+- **Contenu dynamique** :
+  - Modèle Prisma `ContentSection` (clé + JSON) — une ligne par section éditable
+  - `lib/content/sections.ts` — schémas Zod + valeurs par défaut (= texte d'origine) pour 4 sections : `general` (noms, date, deadline RSVP, hashtag), `venues` (les 2 lieux), `event_faq`, `gallery_highlights` (cartes de la galerie)
+  - `lib/content.ts` — lecture des sections avec repli automatique sur les valeurs par défaut si la base n'a pas encore été modifiée
+  - `app/api/admin/content/[key]/route.ts` — API GET/PUT pour chaque section
+  - `app/api/admin/upload/route.ts` + `lib/cloudinary.ts` — upload d'images vers Cloudinary
+  - `app/admin/(dashboard)/content/page.tsx` — l'écran du dashboard (4 onglets), `components/admin/ArrayEditor.tsx` (listes éditables : FAQ, cartes galerie), `components/admin/ImageUploadField.tsx`
+  - Pages publiques `app/(public)/page.tsx`, `event/`, `gallery/`, `rsvp/` et `components/layout/Footer.tsx` : lisent maintenant le contenu dynamique au lieu de textes codés en dur. `export const dynamic = "force-dynamic"` ajouté sur les layouts/pages concernés — **sans ça, Next.js mettrait ces pages en cache statique au build et les modifications du dashboard n'apparaîtraient jamais en prod.**
+- Hors-scope pour l'instant (texte toujours codé en dur, même pattern à réutiliser plus tard) : timeline/anecdotes de `/story`, liste de cadeaux, copy de la navbar.
+
+### Tester en local
+
+La base `db` du `docker-compose.yml` n'expose pas son port sur l'hôte (volontaire, pour la prod). Pour que `npm run dev` lancé directement sur ta machine puisse s'y connecter, un fichier **`docker-compose.override.yml`** (non commité, local uniquement) expose `127.0.0.1:3307` → port 3306 du conteneur (3306 était déjà pris par un autre MySQL local). `.env.local` pointe vers ce port.
+
+```bash
+docker compose up -d db                  # démarre juste la base (avec le port 3307 exposé localement)
+npm run dev
+
+# première fois : créer un compte admin
+npx tsx scripts/create-admin.ts --email=toi@example.com --password=ton-mot-de-passe
+```
+
+Puis : `http://localhost:3000/admin` → redirige vers `/admin/login` si non connecté → une fois connecté, `/admin/content` permet d'éditer les 4 sections. Toute modification doit apparaître immédiatement sur les pages publiques correspondantes (`/`, `/event`, `/gallery`, `/rsvp`), sans redémarrer le serveur.
+
+> Note : le driver `@prisma/adapter-mariadb` n'accepte pas le hostname `localhost` dans la chaîne de connexion (bug du parseur) — toujours utiliser `127.0.0.1`.
+
+### Cloudinary (upload d'images)
+
+Pas encore configuré. Pour tester l'upload de photos depuis le dashboard (onglet "Galerie" ou champ photo des lieux) :
+
+1. Créer un compte gratuit sur [cloudinary.com](https://cloudinary.com)
+2. Renseigner `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` dans `.env.local` (en local) ou `.env` (sur le VPS)
+3. Redémarrer le serveur
+
+`next.config.ts` autorise déjà le domaine `res.cloudinary.com` pour `next/image`.

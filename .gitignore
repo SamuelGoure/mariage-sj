@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# local-only override (exposes db port on host for `npm run dev`)
+docker-compose.override.yml
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
