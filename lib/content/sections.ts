@@ -15,16 +15,17 @@ export const generalDefault: GeneralContent = {
   groomName: "Stéphane",
   brideName: "Josiane",
   nameOrder: ["bride", "groom"],
-  weddingDate: "2026-12-31T15:00:00",
-  rsvpDeadline: "2026-12-01",
-  hashtag: "#StéphaneEtJosiane",
+  weddingDate: "2026-11-07T10:00:00",
+  rsvpDeadline: "2026-10-10",
+  hashtag: "#JosianeEtStéphane",
   venueShortName: "Orsay, Île-de-France",
 };
 
 const venueSchema = z.object({
   name: z.string(),
   address: z.string(),
-  timeText: z.string(),
+  // optionnel : les horaires ne sont pas toujours connus à l'avance (cf. réception ci-dessous)
+  timeText: z.string().optional(),
   mapsUrl: z.string(),
   phone: z.string(),
   image: z.string(),
@@ -39,18 +40,18 @@ export type VenuesContent = z.infer<typeof venuesSchema>;
 
 export const venuesDefault: VenuesContent = {
   ceremony: {
-    name: "Salle des Fêtes d'Orsay",
+    name: "Mairie d'Orsay",
     address: "2 Rue de la Division Leclerc, 91400 Orsay",
-    timeText: "Accueil 14h30 · Cérémonie 15h00",
-    mapsUrl: "https://maps.google.com",
+    timeText: "Accueil dès 10h00",
+    mapsUrl: "https://maps.app.goo.gl/kmw34DX4zkXmRB5h7",
     phone: "+2250000000000",
     image: "https://images.unsplash.com/photo-1478146059778-26028b07395a?w=800&q=80",
   },
   reception: {
-    name: "Domaine de Bièvre",
-    address: "12 Allée du Moulin, 91190 Gif-sur-Yvette",
-    timeText: "Cocktail 17h30 · Dîner 20h00 · Soirée 04h00",
-    mapsUrl: "https://maps.google.com",
+    name: "Etoile 91, Palais Groupe",
+    address: "2 Rue Jules Guesde, 91130 Ris-Orangis",
+    // horaire pas encore arrêté
+    mapsUrl: "https://maps.app.goo.gl/uHbBxemjFjTj37A39",
     phone: "+2250000000000",
     image: "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=800&q=80",
   },
@@ -63,12 +64,11 @@ export type EventFaqContent = z.infer<typeof eventFaqSchema>;
 
 export const eventFaqDefault: EventFaqContent = {
   items: [
-    { q: "Peut-on venir avec des enfants ?", a: "Les enfants sont les bienvenus à la cérémonie et au cocktail. Pour le dîner, merci de le préciser lors de votre RSVP afin que nous puissions prévoir les dispositions nécessaires." },
+    { q: "Peut-on venir avec des enfants ?", a: "Les enfants sont les bienvenus à la cérémonie civile. Par contre pour la cérémonie religieuse et la réception, il faut se référer à l'invitation reçue et au nombre de place qui vous sont attribuées sur le site internet." },
     { q: "Y a-t-il un dress code ?", a: "La tenue de soirée est recommandée. Les couleurs blanc et ivoire sont réservées aux mariés. Privilégiez des teintes élégantes — bleu nuit, rose, bordeaux ou doré seront parfaits." },
-    { q: "Où se garer ?", a: "Un parking gratuit et sécurisé est disponible sur place. Des agents guideront les véhicules à partir de 14h00. En transports, gare d'Orsay-Ville (RER B) à 10 min à pied." },
-    { q: "Jusqu'à quelle heure dure la soirée ?", a: "La soirée se termine officiellement à 04h00 du matin. Des navettes seront disponibles à partir de minuit vers Paris et les gares RER proches." },
+    { q: "Où se garer ?", a: "Pour la cérémonie civile, un parking gratuit est disponible sur place à la mairie d'Orsay. Pour la cérémonie religieuse, un parking privé et gratuit est disponible en face du Palais Groupe." },
+    { q: "Jusqu'à quelle heure dure la soirée ?", a: "La soirée se termine officiellement à 02h00 du matin." },
     { q: "Peut-on prendre des photos pendant la cérémonie ?", a: "Nous vous demandons de ranger vos téléphones pendant la cérémonie. Notre photographe immortalisera chaque instant. Après la cérémonie, photos libres !" },
-    { q: "Y a-t-il un menu végétarien / végane ?", a: "Absolument. Merci de préciser vos préférences dans le formulaire RSVP. Nous ferons tout pour que chaque invité passe une soirée mémorable." },
   ],
 };
 
@@ -124,7 +124,7 @@ export const galleryHighlightsDefault: GalleryHighlightsContent = {
       id: 6, tag: "Voyage", title: "Voyage de noces",
       desc: "À venir — bientôt disponible.",
       fullDesc: "Notre voyage de noces sera révélé après le grand jour. Revenez nous voir !",
-      date: "Décembre 2026",
+      date: "Novembre 2026",
     },
   ],
 };

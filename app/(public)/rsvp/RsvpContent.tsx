@@ -81,7 +81,7 @@ export default function RsvpContent({
       bg: "bg-[#1A2B5F]/6",
       label: "Accès",
       value: "RER B — Orsay-Ville",
-      sub: "10 min à pied · parking gratuit",
+      sub: "7 mins à pied · parking gratuit",
     },
   ];
 

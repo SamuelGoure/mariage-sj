@@ -55,7 +55,7 @@ export default function GiftsPage() {
           </motion.div>
           <motion.p className="text-sm uppercase tracking-[0.4em] text-[#F4A7B9] mb-2"
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.15 }}>
-            Stéphane & Josiane
+            Josiane & Stéphane
           </motion.p>
           <motion.h1 className="font-heading text-6xl md:text-7xl text-white font-light"
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.25 }}>

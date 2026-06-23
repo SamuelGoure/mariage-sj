@@ -15,11 +15,12 @@ const dmSans = DM_Sans({
   weight: ["300", "400", "500", "600"],
 });
 
+// Métadonnées statiques (pas encore reliées au CMS) — à garder cohérentes avec lib/content/sections.ts
 export const metadata: Metadata = {
-  title: "Stéphane & Josiane — Notre Mariage",
+  title: "Josiane & Stéphane — Notre Mariage",
   description: "Rejoignez-nous pour célébrer notre union le jour le plus beau de notre vie.",
   openGraph: {
-    title: "Stéphane & Josiane",
+    title: "Josiane & Stéphane",
     description: "Rejoignez-nous pour célébrer notre union.",
     type: "website",
   },

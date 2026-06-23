@@ -43,11 +43,11 @@ export default async function HomePage() {
     <>
       {/* ── HERO ──────────────────────────────────────────────── */}
       <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
-        {/* Background photo */}
+        {/* Background photo — pas encore reliée au CMS (general ne couvre pas encore les images de la home) */}
         <div className="absolute inset-0" aria-hidden>
           <Image
-            src="/steph1.jpg"
-            alt="Stéphane Gouré"
+            src="/jands.jpg"
+            alt="Josiane & Stéphane"
             fill
             priority
             className="object-cover object-center"

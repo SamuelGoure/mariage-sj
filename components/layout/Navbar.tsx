@@ -50,10 +50,11 @@ export default function Navbar() {
             <Heart
               className={`w-5 h-5 transition-colors duration-300 ${logoColor} fill-current`}
             />
+            {/* Pas encore relié au CMS (champ "general" ne couvre que home/footer/rsvp pour l'instant) */}
             <span
               className={`font-heading text-xl tracking-widest uppercase transition-colors duration-300 ${textColor}`}
             >
-              S & J
+              J & S
             </span>
           </Link>
 

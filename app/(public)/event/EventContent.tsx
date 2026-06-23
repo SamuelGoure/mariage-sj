@@ -6,7 +6,8 @@ import Image from "next/image";
 import { MapPin, Clock, Car, Shirt, Heart, Music, UtensilsCrossed, Baby, Navigation, Phone, Sparkles } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { RingsIcon, FloralDivider, FloralCorner, WaveDivider } from "@/components/ui/decorations";
-import type { VenuesContent, EventFaqContent } from "@/lib/content/sections";
+import type { GeneralContent, VenuesContent, EventFaqContent } from "@/lib/content/sections";
+import { formatLongDateFr } from "@/lib/utils";
 
 function FadeIn({ children, className, delay = 0, direction = "up" }: {
   children: React.ReactNode; className?: string; delay?: number;
@@ -38,8 +39,10 @@ const timeline = [
 ];
 
 export default function EventContent({
-  venues, faq,
-}: { venues: VenuesContent; faq: EventFaqContent }) {
+  general, venues, faq,
+}: { general: GeneralContent; venues: VenuesContent; faq: EventFaqContent }) {
+  const weddingDateText = formatLongDateFr(general.weddingDate);
+
   return (
     <div className="bg-[#FDF8F5]">
 
@@ -61,7 +64,7 @@ export default function EventContent({
           </motion.div>
           <motion.p className="text-sm uppercase tracking-[0.4em] text-[#F4A7B9] mb-2"
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
-            31 Décembre 2026
+            {weddingDateText}
           </motion.p>
           <motion.h1 className="font-heading text-6xl md:text-8xl text-white font-light"
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.2 }}>
@@ -139,7 +142,7 @@ export default function EventContent({
                     <div className="w-8 h-8 rounded-full bg-[#e91e8c] flex items-center justify-center">
                       <Heart className="w-4 h-4 text-white fill-current" />
                     </div>
-                    <span className="text-white font-heading text-xl">Cérémonie</span>
+                    <span className="text-white font-heading text-xl">Cérémonie civile</span>
                   </div>
                 </div>
                 <div className="bg-white p-6 flex flex-col gap-3">
@@ -148,10 +151,12 @@ export default function EventContent({
                     <MapPin className="w-4 h-4 mt-0.5 text-[#e91e8c] shrink-0" />
                     <span>{venues.ceremony.address}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Clock className="w-4 h-4 text-[#e91e8c]" />
-                    <span>{venues.ceremony.timeText}</span>
-                  </div>
+                  {venues.ceremony.timeText && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Clock className="w-4 h-4 text-[#e91e8c]" />
+                      <span>{venues.ceremony.timeText}</span>
+                    </div>
+                  )}
                   <div className="flex gap-2 mt-1">
                     <a href={venues.ceremony.mapsUrl} target="_blank" rel="noopener noreferrer"
                       className="flex items-center gap-1.5 text-xs font-semibold text-white bg-[#e91e8c] px-3 py-1.5 rounded-full hover:bg-[#c4177a] transition-colors">
@@ -180,7 +185,7 @@ export default function EventContent({
                     <div className="w-8 h-8 rounded-full bg-[#4A90D9] flex items-center justify-center">
                       <UtensilsCrossed className="w-4 h-4 text-white" />
                     </div>
-                    <span className="text-white font-heading text-xl">Réception</span>
+                    <span className="text-white font-heading text-xl">Cérémonie réligieuse et réception</span>
                   </div>
                 </div>
                 <div className="bg-white p-6 flex flex-col gap-3">
@@ -189,10 +194,13 @@ export default function EventContent({
                     <MapPin className="w-4 h-4 mt-0.5 text-[#4A90D9] shrink-0" />
                     <span>{venues.reception.address}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Clock className="w-4 h-4 text-[#4A90D9]" />
-                    <span>{venues.reception.timeText}</span>
-                  </div>
+                  {/* Horaire pas encore arrêté (cf. feature/updates) — pas de ligne affichée pour l'instant */}
+                  {venues.reception.timeText && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Clock className="w-4 h-4 text-[#4A90D9]" />
+                      <span>{venues.reception.timeText}</span>
+                    </div>
+                  )}
                   <div className="flex gap-2 mt-1">
                     <a href={venues.reception.mapsUrl} target="_blank" rel="noopener noreferrer"
                       className="flex items-center gap-1.5 text-xs font-semibold text-white bg-[#4A90D9] px-3 py-1.5 rounded-full hover:bg-[#3a7bc8] transition-colors">
