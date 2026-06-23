@@ -1,5 +1,6 @@
 "use client";
 
+import { redirect } from "next/navigation";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import Image from "next/image";
@@ -36,6 +37,9 @@ const giftList = [
 ];
 
 export default function GiftsPage() {
+  // Page pas encore prête à être montrée aux invités — retirer cette ligne pour la réactiver
+  redirect("/");
+
   return (
     <div className="bg-[#FDF8F5]">
 

@@ -31,12 +31,10 @@ export default async function Footer() {
           {/* Navigation */}
           <div className="flex flex-col items-center gap-3">
             <h4 className="font-heading text-xl text-[#F4A7B9] mb-2">Navigation</h4>
+            {/* /story, /gifts et /gallery désactivées pour l'instant — voir leur page.tsx */}
             {[
               { href: "/event",   label: "Le Mariage" },
-              { href: "/story",   label: "Notre Histoire" },
               { href: "/rsvp",    label: "RSVP" },
-              { href: "/gifts",   label: "Cadeaux" },
-              { href: "/gallery", label: "Galerie" },
             ].map(({ href, label }) => (
               <Link
                 key={href}

@@ -6,13 +6,11 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Heart } from "lucide-react";
 
+// /story, /gifts et /gallery sont désactivées pour l'instant (pas encore prêtes) — voir leur page.tsx
 const links = [
   { href: "/",        label: "Accueil" },
   { href: "/event",   label: "Le Mariage" },
-  { href: "/story",   label: "Notre Histoire" },
   { href: "/rsvp",    label: "RSVP" },
-  { href: "/gifts",   label: "Cadeaux" },
-  { href: "/gallery", label: "Galerie" },
 ];
 
 export default function Navbar() {

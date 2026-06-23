@@ -445,14 +445,11 @@ export default function RsvpContent({
                   ))}
                 </div>
 
+                {/* Bouton "Liste de cadeaux" retiré tant que /gifts est désactivée */}
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <a href="/event"
                     className="flex items-center justify-center gap-2 px-8 py-3.5 rounded-full font-semibold text-white bg-[#1A2B5F] hover:bg-[#132048] transition-colors">
                     Voir le programme <ChevronRight className="w-4 h-4" />
-                  </a>
-                  <a href="/gifts"
-                    className="flex items-center justify-center gap-2 px-8 py-3.5 rounded-full font-semibold text-[#e91e8c] bg-white border border-[#e91e8c]/30 hover:bg-rose-50 transition-colors">
-                    Liste de cadeaux <ChevronRight className="w-4 h-4" />
                   </a>
                 </div>
               </motion.div>
