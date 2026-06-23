@@ -16,10 +16,10 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Stéphane & Josiane — Notre Mariage",
+  title: "Josiane & Stéphane — Notre Mariage",
   description: "Rejoignez-nous pour célébrer notre union le jour le plus beau de notre vie.",
   openGraph: {
-    title: "Stéphane & Josiane",
+    title: "Josiane & Stéphane",
     description: "Rejoignez-nous pour célébrer notre union.",
     type: "website",
   },

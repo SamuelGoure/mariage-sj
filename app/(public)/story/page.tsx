@@ -60,7 +60,7 @@ const timeline = [
   {
     year: "2026",
     title: "Le grand jour",
-    text: "Le 31 décembre 2026, devant ceux qu'ils aiment, ils diront Oui pour l'éternité.",
+    text: "Le 7 novembre 2026, devant ceux qu'ils aiment, ils diront Oui pour l'éternité.",
     side: "left",
     color: "#F4A7B9",
   },
@@ -94,7 +94,7 @@ export default function StoryPage() {
         <div className="relative z-10 text-center px-6">
           <motion.p className="text-sm uppercase tracking-[0.4em] text-[#F4A7B9] mb-3"
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-            Stéphane & Josiane
+            Josiane & Stéphane
           </motion.p>
           <motion.h1 className="font-heading text-6xl md:text-7xl text-white font-light"
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }}>
@@ -241,7 +241,7 @@ export default function StoryPage() {
       <section className="py-20 bg-gradient-wedding flex flex-col items-center gap-6 px-6 text-center">
         <FadeIn>
           <h2 className="font-heading text-4xl md:text-5xl text-[#1A2B5F]">Rejoignez-nous</h2>
-          <p className="text-muted-foreground mt-3 mb-6">Le 31 décembre 2026, soyez témoins de la suite.</p>
+          <p className="text-muted-foreground mt-3 mb-6">Le 7 novembre 2026, soyez témoins de la suite.</p>
           <a href="/rsvp" className="px-10 py-4 rounded-full font-semibold text-white bg-[#e91e8c] hover:bg-[#c4177a] transition-all shadow-md hover:-translate-y-0.5">
             Confirmer ma présence
           </a>

@@ -37,8 +37,8 @@ export default function HomePage() {
         {/* Background photo */}
         <div className="absolute inset-0" aria-hidden>
           <Image
-            src="/steph1.jpg"
-            alt="Stéphane Gouré"
+            src="/jands.jpg"
+            alt="Josiane & Stéphane"
             fill
             priority
             className="object-cover object-center"
@@ -65,7 +65,7 @@ export default function HomePage() {
             </FadeIn>
             <FadeIn direction="up" delay={0.3}>
               <h1 className="font-heading text-6xl md:text-8xl lg:text-9xl font-light text-white leading-none">
-                Stéphane
+                Josiane
               </h1>
             </FadeIn>
             <FadeIn direction="none" delay={0.45}>
@@ -73,7 +73,7 @@ export default function HomePage() {
             </FadeIn>
             <FadeIn direction="up" delay={0.4}>
               <h1 className="font-heading text-6xl md:text-8xl lg:text-9xl font-light text-white leading-none">
-                Josiane
+                Stéphane
               </h1>
             </FadeIn>
           </div>
@@ -81,7 +81,7 @@ export default function HomePage() {
           {/* Date & Lieu */}
           <FadeIn direction="up" delay={0.6} className="flex flex-col items-center gap-2 mt-1">
             <p className="font-heading text-2xl md:text-3xl italic text-[#F4A7B9]">
-              Le 31 Décembre 2026
+              Le 7 novembre 2026
             </p>
             <div className="flex items-center gap-2 text-white/70 text-sm">
               <MapPin className="w-4 h-4" />
@@ -124,7 +124,7 @@ export default function HomePage() {
           </FadeIn>
           <FadeIn delay={0.25}>
             <p className="text-white/35 text-xs uppercase tracking-[0.3em]">
-              31 Décembre 2026 · Orsay, Île-de-France
+              7 novembre 2026 · Orsay, Île-de-France
             </p>
           </FadeIn>
         </div>
@@ -237,7 +237,7 @@ export default function HomePage() {
             <p className="text-white/70 text-base leading-relaxed">
               Votre présence sera le plus beau cadeau que vous puissiez nous offrir.
               Merci de confirmer votre venue avant le{" "}
-              <strong className="text-[#F4A7B9]">1er décembre 2026</strong>.
+              <strong className="text-[#F4A7B9]">10 octobre 2026</strong>.
             </p>
           </FadeIn>
           <FadeIn delay={0.3} className="flex flex-col items-center gap-3">

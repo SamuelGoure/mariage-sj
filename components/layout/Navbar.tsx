@@ -53,7 +53,7 @@ export default function Navbar() {
             <span
               className={`font-heading text-xl tracking-widest uppercase transition-colors duration-300 ${textColor}`}
             >
-              S & J
+              J & S
             </span>
           </Link>
 

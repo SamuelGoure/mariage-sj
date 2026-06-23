@@ -37,12 +37,11 @@ const timeline = [
 ];
 
 const faq = [
-  { q: "Peut-on venir avec des enfants ?", a: "Les enfants sont les bienvenus à la cérémonie et au cocktail. Pour le dîner, merci de le préciser lors de votre RSVP afin que nous puissions prévoir les dispositions nécessaires." },
+  { q: "Peut-on venir avec des enfants ?", a: "Les enfants sont les bienvenus à la cérémonie civile. Par contre pour la cérémonie religieuse et la réception, il faut se référer à l'invitation reçue et au nombre de place qui vous sont attribuées sur le site internet." },
   { q: "Y a-t-il un dress code ?", a: "La tenue de soirée est recommandée. Les couleurs blanc et ivoire sont réservées aux mariés. Privilégiez des teintes élégantes — bleu nuit, rose, bordeaux ou doré seront parfaits." },
-  { q: "Où se garer ?", a: "Un parking gratuit et sécurisé est disponible sur place. Des agents guideront les véhicules à partir de 14h00. En transports, gare d'Orsay-Ville (RER B) à 10 min à pied." },
-  { q: "Jusqu'à quelle heure dure la soirée ?", a: "La soirée se termine officiellement à 04h00 du matin. Des navettes seront disponibles à partir de minuit vers Paris et les gares RER proches." },
+  { q: "Où se garer ?", a: "Pour la cérémonie civile, un parking gratuit est disponible sur place à la mairie d'Orsay. Pour la cérémonie religieuse, un parking privé et gratuitest disponible en face du Palais Groupe." },
+  { q: "Jusqu'à quelle heure dure la soirée ?", a: "La soirée se termine officiellement à 02h00 du matin." },
   { q: "Peut-on prendre des photos pendant la cérémonie ?", a: "Nous vous demandons de ranger vos téléphones pendant la cérémonie. Notre photographe immortalisera chaque instant. Après la cérémonie, photos libres !" },
-  { q: "Y a-t-il un menu végétarien / végane ?", a: "Absolument. Merci de préciser vos préférences dans le formulaire RSVP. Nous ferons tout pour que chaque invité passe une soirée mémorable." },
 ];
 
 export default function EventPage() {
@@ -67,7 +66,7 @@ export default function EventPage() {
           </motion.div>
           <motion.p className="text-sm uppercase tracking-[0.4em] text-[#F4A7B9] mb-2"
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
-            31 Décembre 2026
+            7 novembre 2026
           </motion.p>
           <motion.h1 className="font-heading text-6xl md:text-8xl text-white font-light"
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.2 }}>
@@ -145,21 +144,21 @@ export default function EventPage() {
                     <div className="w-8 h-8 rounded-full bg-[#e91e8c] flex items-center justify-center">
                       <Heart className="w-4 h-4 text-white fill-current" />
                     </div>
-                    <span className="text-white font-heading text-xl">Cérémonie</span>
+                    <span className="text-white font-heading text-xl">Cérémonie civile</span>
                   </div>
                 </div>
                 <div className="bg-white p-6 flex flex-col gap-3">
-                  <h3 className="font-heading text-2xl text-[#1A2B5F]">Salle des Fêtes d&apos;Orsay</h3>
+                  <h3 className="font-heading text-2xl text-[#1A2B5F]">Mairie d'Orsay</h3>
                   <div className="flex items-start gap-2 text-sm text-muted-foreground">
                     <MapPin className="w-4 h-4 mt-0.5 text-[#e91e8c] shrink-0" />
                     <span>2 Rue de la Division Leclerc, 91400 Orsay</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Clock className="w-4 h-4 text-[#e91e8c]" />
-                    <span>Accueil 14h30 · Cérémonie 15h00</span>
+                    {/* <span>Accueil 14h30 · Cérémonie 15h00</span> */}
                   </div>
                   <div className="flex gap-2 mt-1">
-                    <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer"
+                    <a href="https://maps.app.goo.gl/kmw34DX4zkXmRB5h7" target="_blank" rel="noopener noreferrer"
                       className="flex items-center gap-1.5 text-xs font-semibold text-white bg-[#e91e8c] px-3 py-1.5 rounded-full hover:bg-[#c4177a] transition-colors">
                       <Navigation className="w-3 h-3" /> Itinéraire
                     </a>
@@ -186,21 +185,21 @@ export default function EventPage() {
                     <div className="w-8 h-8 rounded-full bg-[#4A90D9] flex items-center justify-center">
                       <UtensilsCrossed className="w-4 h-4 text-white" />
                     </div>
-                    <span className="text-white font-heading text-xl">Réception</span>
+                    <span className="text-white font-heading text-xl">Cérémonie réligieuse et réception</span>
                   </div>
                 </div>
                 <div className="bg-white p-6 flex flex-col gap-3">
-                  <h3 className="font-heading text-2xl text-[#1A2B5F]">Domaine de Bièvre</h3>
+                  <h3 className="font-heading text-2xl text-[#1A2B5F]">Etoile 91, Palais Groupe</h3>
                   <div className="flex items-start gap-2 text-sm text-muted-foreground">
                     <MapPin className="w-4 h-4 mt-0.5 text-[#4A90D9] shrink-0" />
-                    <span>12 Allée du Moulin, 91190 Gif-sur-Yvette</span>
+                    <span>2 Rue Jules Guesde, 91130 Ris-Orangis</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Clock className="w-4 h-4 text-[#4A90D9]" />
-                    <span>Cocktail 17h30 · Dîner 20h00 · Soirée 04h00</span>
+                    {/* <span>Cocktail 17h30 · Dîner 20h00 · Soirée 04h00</span> */}
                   </div>
                   <div className="flex gap-2 mt-1">
-                    <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer"
+                    <a href="https://maps.app.goo.gl/uHbBxemjFjTj37A39" target="_blank" rel="noopener noreferrer"
                       className="flex items-center gap-1.5 text-xs font-semibold text-white bg-[#4A90D9] px-3 py-1.5 rounded-full hover:bg-[#3a7bc8] transition-colors">
                       <Navigation className="w-3 h-3" /> Itinéraire
                     </a>

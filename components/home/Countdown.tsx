@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
-const WEDDING_DATE = new Date(process.env.NEXT_PUBLIC_WEDDING_DATE || "2025-12-31T15:00:00");
+const WEDDING_DATE = new Date(process.env.NEXT_PUBLIC_WEDDING_DATE || "2026-11-07T10:00:00");
 
 function pad(n: number) {
   return String(n).padStart(2, "0");

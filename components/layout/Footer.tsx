@@ -11,11 +11,11 @@ export default function Footer() {
             <div className="flex items-center gap-2">
               <Heart className="w-5 h-5 text-[#F4A7B9] fill-current" />
               <span className="font-heading text-2xl tracking-widest uppercase text-white">
-                S & J
+                J & S
               </span>
             </div>
             <p className="font-heading text-lg italic text-[#F4A7B9]">
-              Stéphane & Josiane
+              Josiane & Stéphane
             </p>
             <p className="text-sm text-blue-200 text-center md:text-left leading-relaxed">
               Un jour, une promesse, une éternité.
@@ -45,7 +45,7 @@ export default function Footer() {
           {/* Hashtag & infos */}
           <div className="flex flex-col items-center md:items-end gap-4">
             <p className="font-heading text-3xl text-[#F4A7B9] italic">
-              #StéphaneEtJosiane
+              #JosianeEtStéphane
             </p>
             <p className="text-sm text-blue-200 text-center md:text-right">
               Partagez vos photos avec notre hashtag
@@ -55,7 +55,7 @@ export default function Footer() {
 
         <div className="mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-blue-300">
-            Fait avec <Heart className="inline w-3 h-3 text-[#F4A7B9] fill-current mx-1" /> pour Stéphane & Josiane
+            Fait avec <Heart className="inline w-3 h-3 text-[#F4A7B9] fill-current mx-1" /> pour Josiane & Stéphane
           </p>
           <p className="text-sm text-blue-300">
             © {new Date().getFullYear()} — Tous droits réservés

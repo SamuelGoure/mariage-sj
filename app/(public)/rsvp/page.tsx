@@ -29,15 +29,15 @@ const infos = [
     color: "#e91e8c",
     bg: "bg-[#e91e8c]/8",
     label: "Date & Heure",
-    value: "31 Décembre 2026",
-    sub: "Accueil dès 14h30",
+    value: "7 novembre 2026",
+    sub: "Accueil dès 10h00",
   },
   {
     icon: MapPin,
     color: "#4A90D9",
     bg: "bg-[#4A90D9]/8",
     label: "Lieu",
-    value: "Salle des Fêtes d'Orsay",
+    value: "Mairie d'Orsay",
     sub: "2 Rue de la Division Leclerc, 91400",
   },
   {
@@ -46,7 +46,7 @@ const infos = [
     bg: "bg-[#1A2B5F]/6",
     label: "Accès",
     value: "RER B — Orsay-Ville",
-    sub: "10 min à pied · parking gratuit",
+    sub: "7 mins à pied · parking gratuit",
   },
 ];
 
@@ -159,7 +159,7 @@ function RsvpContent() {
           <motion.p
             className="text-xs uppercase tracking-[0.5em] text-[#F4A7B9] mb-3 font-medium"
             initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
-            {guestName ? `Invitation pour ${guestName}` : "Stéphane & Josiane · 31 Décembre 2026"}
+            {guestName ? `Invitation pour ${guestName}` : "Josiane & Stéphane · 7 novembre 2026"}
           </motion.p>
           <motion.h1
             className="font-heading text-7xl md:text-8xl text-white font-light leading-none mb-4"
@@ -175,7 +175,7 @@ function RsvpContent() {
             initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.5 }}>
             <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white/90 text-sm px-5 py-2 rounded-full">
               <Clock className="w-3.5 h-3.5 text-[#F4A7B9]" />
-              Réponse souhaitée avant le <strong className="text-[#F4A7B9] ml-1">1er décembre 2026</strong>
+              Réponse souhaitée avant le <strong className="text-[#F4A7B9] ml-1">10 octobre 2026</strong>
             </span>
           </motion.div>
         </div>
@@ -188,10 +188,10 @@ function RsvpContent() {
           <h2 className="font-heading text-4xl text-[#1A2B5F]">Un mot des mariés</h2>
           <FloralDivider className="w-44 h-5" />
           <p className="text-muted-foreground leading-relaxed text-base">
-            Votre présence à nos côtés le soir du <strong className="text-[#1A2B5F]">31 décembre</strong> serait le
+            Votre présence à nos côtés le soir du <strong className="text-[#1A2B5F]">07 novembre 2026</strong> serait le
             plus beau des cadeaux. Pour que nous puissions organiser cette soirée comme vous le méritez,
             merci de nous confirmer avant le{" "}
-            <span className="font-semibold text-[#e91e8c]">1er décembre 2026</span>.
+            <span className="font-semibold text-[#e91e8c]">10 octobre 2026</span>.
           </p>
           <p className="font-heading text-xl italic text-[#e91e8c]">
             — Stéphane &amp; Josiane
@@ -414,7 +414,7 @@ function RsvpContent() {
                     <FloralDivider className="w-44 h-5" />
                     <p className="text-muted-foreground leading-relaxed max-w-sm">
                       Votre présence nous touche profondément.
-                      Nous avons hâte de célébrer avec vous le <strong className="text-[#1A2B5F]">31 décembre</strong> !
+                      Nous avons hâte de célébrer avec vous le <strong className="text-[#1A2B5F]">07 novembre 2026</strong> !
                     </p>
                   </div>
                 </div>
@@ -422,8 +422,8 @@ function RsvpContent() {
                 {/* Infos pratiques post-confirmation */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
                   {[
-                    { icon: CalendarDays, label: "Rendez-vous le", value: "31 Déc. 2026", sub: "à partir de 14h30", color: "#e91e8c" },
-                    { icon: MapPin,       label: "Adresse",        value: "Salle d'Orsay", sub: "2 Rue Division Leclerc", color: "#4A90D9" },
+                    { icon: CalendarDays, label: "Rendez-vous le", value: "07 Nov. 2026", sub: "à partir de 10h00", color: "#e91e8c" },
+                    { icon: MapPin,       label: "Adresse",        value: "Mairie d'Orsay", sub: "2 Rue Division Leclerc, 91400 Orsay", color: "#4A90D9" },
                     { icon: Train,        label: "RER B",          value: "Orsay-Ville",   sub: "10 min à pied",         color: "#1A2B5F" },
                   ].map(({ icon: Icon, label, value, sub, color }) => (
                     <div key={label} className="bg-white rounded-2xl p-4 border border-rose-50 text-center">
