@@ -58,8 +58,16 @@ export default async function Footer() {
         </div>
 
         <div className="mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-blue-300">
-            Fait avec <Heart className="inline w-3 h-3 text-[#F4A7B9] fill-current mx-1" /> pour {fullNames}
+          <p className="text-xs text-blue-300/70">
+            Développé par{" "}
+            <a
+              href="https://www.linkedin.com/in/samuel-goure/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2 hover:text-white transition-colors"
+            >
+              Samuel Gouré
+            </a>
           </p>
           <p className="text-sm text-blue-300">
             © {new Date().getFullYear()} — Tous droits réservés

@@ -7,8 +7,7 @@ import { Users, Image, CheckCircle, XCircle, Clock, Heart, FileText } from "luci
 
 interface RsvpItem {
   id: number;
-  firstName: string;
-  lastName: string;
+  name: string;
   attending: boolean;
   guestCount: number;
   createdAt: string;
@@ -147,7 +146,7 @@ export default function AdminPage() {
                 <div key={r.id} className="px-6 py-4 flex items-center gap-4">
                   <div className={`w-2 h-2 rounded-full flex-shrink-0 ${r.attending ? "bg-green-400" : "bg-red-400"}`} />
                   <div className="flex-1">
-                    <p className="text-white text-sm font-medium">{r.firstName} {r.lastName}</p>
+                    <p className="text-white text-sm font-medium">{r.name}</p>
                     <p className="text-blue-400 text-xs">
                       {r.attending ? `${r.guestCount} personne${r.guestCount > 1 ? "s" : ""}` : "Ne viendra pas"}
                     </p>

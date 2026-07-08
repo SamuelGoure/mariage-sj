@@ -5,11 +5,19 @@ import { prisma } from "@/lib/prisma";
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const body = await req.json();
-  const guest = await prisma.guest.update({
-    where: { id: Number(id) },
-    data: body,
-  });
-  return NextResponse.json(guest);
+  try {
+    const guest = await prisma.guest.update({
+      where: { id: Number(id) },
+      data: body,
+    });
+    return NextResponse.json(guest);
+  } catch (err: unknown) {
+    if (typeof err === "object" && err !== null && "code" in err && err.code === "P2002") {
+      return NextResponse.json({ error: "Ce code est déjà utilisé par un autre invité." }, { status: 400 });
+    }
+    console.error("[GUEST PATCH]", err);
+    return NextResponse.json({ error: "Erreur serveur." }, { status: 500 });
+  }
 }
 
 // DELETE /api/guests/[id]

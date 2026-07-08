@@ -2,31 +2,33 @@
 
 import { useEffect, useState, useRef } from "react";
 import {
-  Users, UserCheck, UserX, Clock, Search, Plus, Upload,
-  Copy, Trash2, ChevronDown, X, Check,
+  Users, UserCheck, UserX, Clock, ShieldQuestion, Search, Plus, Upload,
+  Copy, Trash2, Pencil, QrCode, Download, ChevronDown, X, Check,
 } from "lucide-react";
+import QRCode from "qrcode";
 
-type GuestStatus = "PENDING" | "CONFIRMED" | "DECLINED";
+type GuestStatus = "PENDING" | "AWAITING_VALIDATION" | "CONFIRMED" | "DECLINED";
 
 type Guest = {
   id: number;
   name: string;
-  phone: string | null;
   address: string | null;
-  group: string | null;
   token: string;
+  seatsAllowed: number;
   status: GuestStatus;
-  rsvp: { attending: boolean; guestCount: number } | null;
+  rsvp: { id: number; attending: boolean; guestCount: number; companions: string[] | null } | null;
   createdAt: string;
 };
 
 const STATUS_LABEL: Record<GuestStatus, string> = {
   PENDING: "En attente",
+  AWAITING_VALIDATION: "À valider",
   CONFIRMED: "Confirmé",
   DECLINED: "Décliné",
 };
 const STATUS_COLOR: Record<GuestStatus, string> = {
   PENDING: "bg-amber-100 text-amber-700",
+  AWAITING_VALIDATION: "bg-purple-100 text-purple-700",
   CONFIRMED: "bg-emerald-100 text-emerald-700",
   DECLINED: "bg-red-100 text-red-700",
 };
@@ -51,15 +53,19 @@ export default function AdminGuestsPage() {
   const [guests, setGuests] = useState<Guest[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [filterGroup, setFilterGroup] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
+  const [editForm, setEditForm] = useState({ name: "", token: "", seatsAllowed: 4, status: "PENDING" as GuestStatus });
+  const [editError, setEditError] = useState("");
   const [copied, setCopied] = useState<number | null>(null);
+  const [qrGuest, setQrGuest] = useState<Guest | null>(null);
+  const [qrDataUrl, setQrDataUrl] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Formulaire ajout
-  const [form, setForm] = useState({ name: "", phone: "", address: "", group: "" });
+  const [form, setForm] = useState({ name: "", token: "", seatsAllowed: "4" });
   const [csvText, setCsvText] = useState("");
 
   const origin = typeof window !== "undefined" ? window.location.origin : "";
@@ -78,20 +84,17 @@ export default function AdminGuestsPage() {
   const confirmed = guests.filter(g => g.status === "CONFIRMED").length;
   const declined = guests.filter(g => g.status === "DECLINED").length;
   const pending = guests.filter(g => g.status === "PENDING").length;
+  const toValidate = guests.filter(g => g.status === "AWAITING_VALIDATION").length;
   const totalSeats = guests
-    .filter(g => g.rsvp?.attending)
+    .filter(g => g.status === "CONFIRMED")
     .reduce((s, g) => s + (g.rsvp?.guestCount ?? 1), 0);
-
-  // Groupes disponibles
-  const groups = [...new Set(guests.map(g => g.group).filter(Boolean))] as string[];
 
   // Filtres
   const filtered = guests.filter(g => {
     const q = search.toLowerCase();
-    const matchSearch = !q || g.name.toLowerCase().includes(q) || (g.phone ?? "").includes(q) || (g.group ?? "").toLowerCase().includes(q);
-    const matchGroup = filterGroup === "all" || g.group === filterGroup;
+    const matchSearch = !q || g.name.toLowerCase().includes(q) || g.token.toLowerCase().includes(q);
     const matchStatus = filterStatus === "all" || g.status === filterStatus;
-    return matchSearch && matchGroup && matchStatus;
+    return matchSearch && matchStatus;
   });
 
   async function addGuest() {
@@ -99,9 +102,13 @@ export default function AdminGuestsPage() {
     await fetch("/api/guests", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify({
+        name: form.name,
+        token: form.token.trim() || undefined,
+        seatsAllowed: Number(form.seatsAllowed) || 4,
+      }),
     });
-    setForm({ name: "", phone: "", address: "", group: "" });
+    setForm({ name: "", token: "", seatsAllowed: "4" });
     setShowAddModal(false);
     load();
   }
@@ -112,18 +119,84 @@ export default function AdminGuestsPage() {
     setGuests(prev => prev.filter(g => g.id !== id));
   }
 
+  async function updateSeats(id: number, seatsAllowed: number) {
+    setGuests(prev => prev.map(g => g.id === id ? { ...g, seatsAllowed } : g));
+    await fetch(`/api/guests/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ seatsAllowed }),
+    });
+  }
+
+  async function updateStatus(guest: Guest, status: GuestStatus) {
+    if (!guest.rsvp && (status === "CONFIRMED" || status === "DECLINED")) {
+      const ok = confirm(
+        `${guest.name} n'a pas encore répondu au RSVP en ligne. Le compter quand même comme "${STATUS_LABEL[status]}" ?`
+      );
+      if (!ok) return;
+    }
+    setGuests(prev => prev.map(g => g.id === guest.id ? { ...g, status } : g));
+    await fetch(`/api/guests/${guest.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+  }
+
+  function openEdit(guest: Guest) {
+    setEditingGuest(guest);
+    setEditForm({ name: guest.name, token: guest.token, seatsAllowed: guest.seatsAllowed, status: guest.status });
+    setEditError("");
+  }
+
+  async function saveEdit() {
+    if (!editingGuest) return;
+    setEditError("");
+    const res = await fetch(`/api/guests/${editingGuest.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: editForm.name.trim(),
+        token: editForm.token.trim().toUpperCase(),
+        seatsAllowed: Number(editForm.seatsAllowed) || 1,
+        status: editForm.status,
+      }),
+    });
+    if (!res.ok) {
+      const d = await res.json().catch(() => null);
+      setEditError(d?.error || "Erreur lors de la sauvegarde.");
+      return;
+    }
+    setEditingGuest(null);
+    load();
+  }
+
   function copyLink(guest: Guest) {
     navigator.clipboard.writeText(`${origin}/rsvp?g=${guest.token}`);
     setCopied(guest.id);
     setTimeout(() => setCopied(null), 1800);
   }
 
-  // Import CSV : format attendu — name,phone,address,group (une ligne par invité)
+  async function openQr(guest: Guest) {
+    setQrGuest(guest);
+    const url = await QRCode.toDataURL(`${origin}/rsvp?g=${guest.token}`, { width: 480, margin: 2 });
+    setQrDataUrl(url);
+  }
+
+  function downloadQr() {
+    if (!qrGuest || !qrDataUrl) return;
+    const a = document.createElement("a");
+    a.href = qrDataUrl;
+    a.download = `invitation-${qrGuest.token}.png`;
+    a.click();
+  }
+
+  // Import CSV : format attendu — nom,code (une ligne par invité, code optionnel)
   async function importCsv() {
     const lines = csvText.trim().split("\n").filter(Boolean);
     const data = lines.map(line => {
-      const [name, phone, address, group] = line.split(",").map(s => s.trim());
-      return { name, phone, address, group };
+      const [name, token] = line.split(",").map(s => s.trim());
+      return { name, token: token || undefined };
     }).filter(d => d.name);
     if (!data.length) return;
     await fetch("/api/guests", {
@@ -138,10 +211,11 @@ export default function AdminGuestsPage() {
 
   // Export CSV
   function exportCsv() {
-    const header = "Nom,Téléphone,Adresse,Groupe,Statut,Couverts,Lien RSVP";
+    const header = "Nom,Code,Statut,Places allouées,Couverts confirmés,Accompagnants,Lien RSVP";
     const rows = guests.map(g =>
-      [g.name, g.phone ?? "", g.address ?? "", g.group ?? "",
-       STATUS_LABEL[g.status], g.rsvp?.guestCount ?? "",
+      [g.name, g.token,
+       STATUS_LABEL[g.status], g.seatsAllowed, g.rsvp?.guestCount ?? "",
+       (g.rsvp?.companions ?? []).join(" | "),
        `${origin}/rsvp?g=${g.token}`].join(",")
     );
     const blob = new Blob([[header, ...rows].join("\n")], { type: "text/csv" });
@@ -176,11 +250,12 @@ export default function AdminGuestsPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <StatCard icon={Users}     label="Total invités"   value={total}      color="bg-blue-500" />
-          <StatCard icon={UserCheck} label="Confirmés"       value={confirmed}  color="bg-emerald-500" />
-          <StatCard icon={UserX}     label="Déclinés"        value={declined}   color="bg-red-500" />
-          <StatCard icon={Clock}     label="En attente"      value={pending}    color="bg-amber-500" />
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+          <StatCard icon={Users}         label="Total invités"   value={total}      color="bg-blue-500" />
+          <StatCard icon={ShieldQuestion} label="À valider"       value={toValidate} color="bg-purple-500" />
+          <StatCard icon={UserCheck}     label="Confirmés"       value={confirmed}  color="bg-emerald-500" />
+          <StatCard icon={UserX}         label="Déclinés"        value={declined}   color="bg-red-500" />
+          <StatCard icon={Clock}         label="En attente"      value={pending}    color="bg-amber-500" />
         </div>
 
         {/* Couverts total */}
@@ -198,17 +273,8 @@ export default function AdminGuestsPage() {
           <div className="relative flex-1 min-w-[220px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
             <input value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="Rechercher un invité…"
+              placeholder="Rechercher un invité ou un code…"
               className="w-full bg-white/10 border border-white/10 text-white placeholder:text-white/30 rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none focus:border-[#e91e8c]/60" />
-          </div>
-
-          <div className="relative">
-            <select value={filterGroup} onChange={e => setFilterGroup(e.target.value)}
-              className="appearance-none bg-white/10 border border-white/10 text-white rounded-xl px-4 py-2.5 text-sm pr-8 outline-none focus:border-[#e91e8c]/60 cursor-pointer">
-              <option value="all">Tous les groupes</option>
-              {groups.map(g => <option key={g} value={g}>{g}</option>)}
-            </select>
-            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/50 pointer-events-none" />
           </div>
 
           <div className="relative">
@@ -216,6 +282,7 @@ export default function AdminGuestsPage() {
               className="appearance-none bg-white/10 border border-white/10 text-white rounded-xl px-4 py-2.5 text-sm pr-8 outline-none focus:border-[#e91e8c]/60 cursor-pointer">
               <option value="all">Tous les statuts</option>
               <option value="PENDING">En attente</option>
+              <option value="AWAITING_VALIDATION">À valider</option>
               <option value="CONFIRMED">Confirmés</option>
               <option value="DECLINED">Déclinés</option>
             </select>
@@ -234,10 +301,10 @@ export default function AdminGuestsPage() {
               <thead>
                 <tr className="border-b border-white/10 text-white/50 uppercase text-xs tracking-wider">
                   <th className="text-left px-5 py-4">Nom</th>
-                  <th className="text-left px-4 py-4 hidden md:table-cell">Téléphone</th>
-                  <th className="text-left px-4 py-4 hidden lg:table-cell">Groupe</th>
+                  <th className="text-left px-4 py-4">Code</th>
                   <th className="text-left px-4 py-4">Statut</th>
-                  <th className="text-left px-4 py-4 hidden sm:table-cell">Couverts</th>
+                  <th className="text-left px-4 py-4 hidden sm:table-cell">Places allouées</th>
+                  <th className="text-left px-4 py-4 hidden md:table-cell">Accompagnants confirmés</th>
                   <th className="text-right px-5 py-4">Actions</th>
                 </tr>
               </thead>
@@ -248,25 +315,50 @@ export default function AdminGuestsPage() {
                       <p className="text-white font-medium">{g.name}</p>
                       {g.address && <p className="text-white/40 text-xs mt-0.5 truncate max-w-[180px]">{g.address}</p>}
                     </td>
-                    <td className="px-4 py-4 text-white/60 hidden md:table-cell">{g.phone ?? "—"}</td>
-                    <td className="px-4 py-4 hidden lg:table-cell">
-                      {g.group
-                        ? <span className="px-2.5 py-1 rounded-full bg-[#4A90D9]/20 text-[#4A90D9] text-xs font-medium">{g.group}</span>
-                        : <span className="text-white/30">—</span>}
+                    <td className="px-4 py-4">
+                      <span className="font-mono text-xs tracking-widest px-2.5 py-1 rounded-lg bg-white/10 text-[#F4A7B9]">{g.token}</span>
                     </td>
                     <td className="px-4 py-4">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${STATUS_COLOR[g.status]}`}>
-                        {STATUS_LABEL[g.status]}
-                      </span>
+                      <select
+                        value={g.status}
+                        onChange={e => updateStatus(g, e.target.value as GuestStatus)}
+                        className={`appearance-none px-2.5 py-1 pr-6 rounded-full text-xs font-semibold border-none outline-none cursor-pointer ${STATUS_COLOR[g.status]}`}
+                      >
+                        <option value="PENDING">En attente</option>
+                        <option value="AWAITING_VALIDATION">À valider</option>
+                        <option value="CONFIRMED">Confirmé</option>
+                        <option value="DECLINED">Décliné</option>
+                      </select>
                     </td>
-                    <td className="px-4 py-4 text-white/60 hidden sm:table-cell">
-                      {g.rsvp ? `${g.rsvp.guestCount} pers.` : "—"}
+                    <td className="px-4 py-4 hidden sm:table-cell">
+                      <input
+                        type="number"
+                        min={1}
+                        value={g.seatsAllowed}
+                        onChange={e => updateSeats(g.id, Math.max(1, Number(e.target.value) || 1))}
+                        className="w-16 bg-white/10 border border-white/10 text-white rounded-lg px-2 py-1.5 text-sm outline-none focus:border-[#e91e8c]/60"
+                      />
+                    </td>
+                    <td className="px-4 py-4 text-white/60 text-xs hidden md:table-cell max-w-[220px]">
+                      {g.rsvp?.attending
+                        ? (g.rsvp.companions?.length
+                            ? `${g.name} + ${g.rsvp.companions.join(", ")}`
+                            : g.name)
+                        : "—"}
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex items-center justify-end gap-2">
                         <button onClick={() => copyLink(g)} title="Copier le lien RSVP"
                           className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/10 hover:bg-white/20 text-white/60 hover:text-white transition-colors">
                           {copied === g.id ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                        </button>
+                        <button onClick={() => openQr(g)} title="QR code"
+                          className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/10 hover:bg-white/20 text-white/60 hover:text-white transition-colors">
+                          <QrCode className="w-3.5 h-3.5" />
+                        </button>
+                        <button onClick={() => openEdit(g)} title="Modifier"
+                          className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/10 hover:bg-white/20 text-white/60 hover:text-white transition-colors">
+                          <Pencil className="w-3.5 h-3.5" />
                         </button>
                         <button onClick={() => deleteGuest(g.id)} title="Supprimer"
                           className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/10 hover:bg-red-500/30 text-white/60 hover:text-red-400 transition-colors">
@@ -293,22 +385,34 @@ export default function AdminGuestsPage() {
                 </button>
               </div>
               <div className="flex flex-col gap-4">
-                {[
-                  { key: "name",    label: "Nom complet *",     placeholder: "Marie Dupont" },
-                  { key: "phone",   label: "Téléphone",          placeholder: "+33 6 12 34 56 78" },
-                  { key: "address", label: "Adresse / Ville",    placeholder: "Paris 75001" },
-                  { key: "group",   label: "Groupe",             placeholder: "Famille mariée, Amis, Collègues…" },
-                ].map(({ key, label, placeholder }) => (
-                  <div key={key}>
-                    <label className="text-white/60 text-xs uppercase tracking-wider mb-1.5 block">{label}</label>
-                    <input
-                      value={form[key as keyof typeof form]}
-                      onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
-                      placeholder={placeholder}
-                      className="w-full bg-white/10 border border-white/10 text-white placeholder:text-white/30 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#e91e8c]/60"
-                    />
-                  </div>
-                ))}
+                <div>
+                  <label className="text-white/60 text-xs uppercase tracking-wider mb-1.5 block">Nom complet *</label>
+                  <input
+                    value={form.name}
+                    onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                    placeholder="Marie Dupont"
+                    className="w-full bg-white/10 border border-white/10 text-white placeholder:text-white/30 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#e91e8c]/60"
+                  />
+                </div>
+                <div>
+                  <label className="text-white/60 text-xs uppercase tracking-wider mb-1.5 block">Code (4 caractères, auto-généré si vide)</label>
+                  <input
+                    value={form.token}
+                    onChange={e => setForm(f => ({ ...f, token: e.target.value.toUpperCase() }))}
+                    placeholder="XXXX"
+                    maxLength={4}
+                    className="w-full bg-white/10 border border-white/10 text-white placeholder:text-white/30 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#e91e8c]/60 font-mono uppercase"
+                  />
+                </div>
+                <div>
+                  <label className="text-white/60 text-xs uppercase tracking-wider mb-1.5 block">Places allouées</label>
+                  <input
+                    type="number" min={1}
+                    value={form.seatsAllowed}
+                    onChange={e => setForm(f => ({ ...f, seatsAllowed: e.target.value }))}
+                    className="w-full bg-white/10 border border-white/10 text-white placeholder:text-white/30 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#e91e8c]/60"
+                  />
+                </div>
               </div>
               <div className="flex gap-3 mt-6">
                 <button onClick={() => setShowAddModal(false)}
@@ -318,6 +422,115 @@ export default function AdminGuestsPage() {
                 <button onClick={addGuest} disabled={!form.name.trim()}
                   className="flex-1 py-2.5 rounded-xl bg-[#e91e8c] hover:bg-[#c4177a] disabled:opacity-40 text-white text-sm font-semibold transition-colors">
                   Ajouter
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Modal modification ── */}
+        {editingGuest && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-[#1e3370] rounded-3xl p-8 w-full max-w-md border border-white/10 shadow-2xl">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-white">Modifier l&apos;invité</h3>
+                <button onClick={() => setEditingGuest(null)} className="text-white/50 hover:text-white">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="flex flex-col gap-4">
+                <div>
+                  <label className="text-white/60 text-xs uppercase tracking-wider mb-1.5 block">Nom complet</label>
+                  <input
+                    value={editForm.name}
+                    onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
+                    className="w-full bg-white/10 border border-white/10 text-white rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#e91e8c]/60"
+                  />
+                </div>
+                <div>
+                  <label className="text-white/60 text-xs uppercase tracking-wider mb-1.5 block">Code</label>
+                  <input
+                    value={editForm.token}
+                    onChange={e => setEditForm(f => ({ ...f, token: e.target.value.toUpperCase() }))}
+                    maxLength={4}
+                    className="w-full bg-white/10 border border-white/10 text-white rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#e91e8c]/60 font-mono uppercase"
+                  />
+                </div>
+                <div>
+                  <label className="text-white/60 text-xs uppercase tracking-wider mb-1.5 block">Places allouées</label>
+                  <input
+                    type="number" min={1}
+                    value={editForm.seatsAllowed}
+                    onChange={e => setEditForm(f => ({ ...f, seatsAllowed: Number(e.target.value) || 1 }))}
+                    className="w-full bg-white/10 border border-white/10 text-white rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#e91e8c]/60"
+                  />
+                </div>
+                <div>
+                  <label className="text-white/60 text-xs uppercase tracking-wider mb-1.5 block">Statut</label>
+                  <select
+                    value={editForm.status}
+                    onChange={e => setEditForm(f => ({ ...f, status: e.target.value as GuestStatus }))}
+                    className="w-full bg-white/10 border border-white/10 text-white rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#e91e8c]/60"
+                  >
+                    <option value="PENDING">En attente</option>
+                    <option value="AWAITING_VALIDATION">À valider</option>
+                    <option value="CONFIRMED">Confirmé</option>
+                    <option value="DECLINED">Décliné</option>
+                  </select>
+                </div>
+                {editError && (
+                  <p className="text-sm text-red-400 bg-red-500/10 py-2.5 px-4 rounded-xl border border-red-500/20">
+                    {editError}
+                  </p>
+                )}
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button onClick={() => setEditingGuest(null)}
+                  className="flex-1 py-2.5 rounded-xl bg-white/10 text-white text-sm hover:bg-white/20 transition-colors">
+                  Annuler
+                </button>
+                <button onClick={saveEdit} disabled={!editForm.name.trim() || editForm.token.trim().length === 0}
+                  className="flex-1 py-2.5 rounded-xl bg-[#e91e8c] hover:bg-[#c4177a] disabled:opacity-40 text-white text-sm font-semibold transition-colors">
+                  Enregistrer
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Modal QR code ── */}
+        {qrGuest && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-[#1e3370] rounded-3xl p-8 w-full max-w-sm border border-white/10 shadow-2xl text-center">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-white">QR code — {qrGuest.name}</h3>
+                <button onClick={() => setQrGuest(null)} className="text-white/50 hover:text-white">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="bg-white rounded-2xl p-4 flex items-center justify-center min-h-[220px]">
+                {qrDataUrl
+                  ? <img src={qrDataUrl} alt={`QR code invitation ${qrGuest.token}`} className="w-full h-auto" />
+                  : <p className="text-[#1A2B5F]/50 text-sm">Génération…</p>}
+              </div>
+              <p className="text-white/50 text-xs mt-4 font-mono tracking-widest">{qrGuest.token}</p>
+
+              <div className="flex items-center gap-2 mt-4 bg-white/10 border border-white/10 rounded-xl px-3 py-2.5">
+                <p className="flex-1 text-white/70 text-xs truncate text-left">{`${origin}/rsvp?g=${qrGuest.token}`}</p>
+                <button onClick={() => copyLink(qrGuest)} title="Copier le lien RSVP"
+                  className="w-7 h-7 shrink-0 rounded-lg flex items-center justify-center bg-white/10 hover:bg-white/20 text-white/60 hover:text-white transition-colors">
+                  {copied === qrGuest.id ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+
+              <div className="flex gap-3 mt-4">
+                <button onClick={() => setQrGuest(null)}
+                  className="flex-1 py-2.5 rounded-xl bg-white/10 text-white text-sm hover:bg-white/20 transition-colors">
+                  Fermer
+                </button>
+                <button onClick={downloadQr} disabled={!qrDataUrl}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#e91e8c] hover:bg-[#c4177a] disabled:opacity-40 text-white text-sm font-semibold transition-colors">
+                  <Download className="w-4 h-4" /> Télécharger
                 </button>
               </div>
             </div>
@@ -335,14 +548,14 @@ export default function AdminGuestsPage() {
                 </button>
               </div>
               <p className="text-white/50 text-xs mb-4 bg-white/5 rounded-xl px-4 py-3 font-mono leading-relaxed">
-                Format : <span className="text-[#F4A7B9]">nom, téléphone, adresse, groupe</span><br />
-                Marie Dupont, +33612345678, Paris, Famille<br />
-                Jean Martin, , Lyon, Amis
+                Format : <span className="text-[#F4A7B9]">nom, code</span> (code optionnel, auto-généré si absent)<br />
+                Marie Dupont, IBJK<br />
+                Jean Martin
               </p>
               <textarea
                 value={csvText} onChange={e => setCsvText(e.target.value)}
                 rows={8}
-                placeholder={"Marie Dupont,+33612345678,Paris 75001,Famille mariée\nJean Martin,,Lyon,Amis"}
+                placeholder={"Marie Dupont,IBJK\nJean Martin"}
                 className="w-full bg-white/10 border border-white/10 text-white placeholder:text-white/20 rounded-xl px-4 py-3 text-sm font-mono outline-none focus:border-[#e91e8c]/60 resize-none"
               />
               <div className="flex gap-3 mt-4">

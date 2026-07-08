@@ -139,49 +139,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── PRÉSENTATION MARIÉS ───────────────────────────────── */}
-      <section className="bg-gradient-wedding py-24 md:py-32 relative overflow-hidden">
-        <FloralCorner className="absolute bottom-4 left-4 w-32 h-32 opacity-20" />
-        <FloralCorner className="absolute top-4 right-4 w-32 h-32 opacity-20" flip />
-        <div className="max-w-5xl mx-auto px-6 lg:px-8">
-          <FadeIn className="flex flex-col items-center gap-4 mb-16">
-            <p className="text-sm uppercase tracking-[0.4em] text-[#e91e8c]">Les mariés</p>
-            <h2 className="font-heading text-5xl md:text-6xl text-[#1A2B5F] text-center">
-              Deux âmes, une promesse
-            </h2>
-            <FloralDivider className="w-52 h-5 mt-1" />
-          </FadeIn>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center">
-            {/* Stéphane */}
-            <FadeIn direction="left" className="flex flex-col items-center gap-5">
-              <div className="w-52 h-52 md:w-64 md:h-64 rounded-full overflow-hidden ring-4 ring-[#F4A7B9] ring-offset-4 ring-offset-[#FDF8F5] relative">
-                <Image src="/steph5.jpg" alt="Stéphane Gouré" fill className="object-cover object-top" />
-              </div>
-              <h3 className="font-heading text-4xl text-[#1A2B5F]">Stéphane</h3>
-              <p className="font-heading text-lg font-light italic text-[#e91e8c]">Gouré</p>
-              <p className="text-sm text-center text-muted-foreground leading-relaxed max-w-xs">
-                Avec son sourire contagieux et son cœur immense, il a su conquérir
-                le sien dès le premier regard.
-              </p>
-            </FadeIn>
-
-            {/* Josiane */}
-            <FadeIn direction="right" className="flex flex-col items-center gap-5">
-              <div className="w-52 h-52 md:w-64 md:h-64 rounded-full overflow-hidden ring-4 ring-[#4A90D9] ring-offset-4 ring-offset-[#FDF8F5] bg-[#eef4ff] flex items-center justify-center">
-                <span className="font-heading text-5xl text-[#1A2B5F]">J</span>
-              </div>
-              <h3 className="font-heading text-4xl text-[#1A2B5F]">Josiane</h3>
-              <p className="font-heading text-lg font-light italic text-[#4A90D9]">Noutcha</p>
-              <p className="text-sm text-center text-muted-foreground leading-relaxed max-w-xs">
-                Lumineuse et pleine de vie, elle a illuminé son monde depuis
-                ce jour mémorable où tout a commencé.
-              </p>
-            </FadeIn>
-          </div>
-        </div>
-      </section>
-
       {/* ── APERÇU JOURNÉE ────────────────────────────────────── */}
       <section className="py-24 bg-white">
         <div className="max-w-5xl mx-auto px-6 lg:px-8">

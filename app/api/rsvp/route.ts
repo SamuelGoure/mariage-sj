@@ -4,37 +4,48 @@ import { prisma } from "@/lib/prisma";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { firstName, lastName, attending, guestCount, mealChoice, allergies, message, guestToken } = body;
+    const { name, attending, companions, message, guestToken } = body;
 
-    if (!firstName || !lastName || attending === undefined) {
+    if (!name?.trim() || attending === undefined) {
       return NextResponse.json({ error: "Champs requis manquants." }, { status: 400 });
     }
 
     // Résoudre le guest via le token si fourni
     let guestId: number | null = null;
+    let seatsAllowed = 4;
     if (guestToken) {
       const guest = await prisma.guest.findUnique({ where: { token: guestToken } });
-      if (guest) guestId = guest.id;
+      if (guest) { guestId = guest.id; seatsAllowed = guest.seatsAllowed; }
+    }
+
+    const cleanCompanions: string[] = Boolean(attending) && Array.isArray(companions)
+      ? companions.map((c: string) => c.trim()).filter(Boolean)
+      : [];
+
+    const maxCompanions = Math.max(0, seatsAllowed - 1);
+    if (cleanCompanions.length > maxCompanions) {
+      return NextResponse.json(
+        { error: `Vous pouvez ajouter au maximum ${maxCompanions} accompagnant(s).` },
+        { status: 400 }
+      );
     }
 
     const rsvp = await prisma.rsvp.create({
       data: {
-        firstName: firstName.trim(),
-        lastName:  lastName.trim(),
+        name: name.trim(),
         attending:  Boolean(attending),
-        guestCount: attending ? Math.max(1, Number(guestCount) || 1) : 0,
-        mealChoice: mealChoice ?? null,
-        allergies:  allergies?.trim() || null,
+        guestCount: attending ? 1 + cleanCompanions.length : 0,
+        companions: cleanCompanions,
         message:    message?.trim() || null,
         ...(guestId ? { guestId } : {}),
       },
     });
 
-    // Mettre à jour le statut du Guest
+    // La réponse attend la validation de l'admin avant de compter comme Confirmé/Décliné
     if (guestId) {
       await prisma.guest.update({
         where: { id: guestId },
-        data: { status: attending ? "CONFIRMED" : "DECLINED" },
+        data: { status: "AWAITING_VALIDATION" },
       });
     }
 
@@ -49,7 +60,7 @@ export async function GET() {
   try {
     const rsvps = await prisma.rsvp.findMany({
       orderBy: { createdAt: "desc" },
-      include: { guest: { select: { name: true, group: true } } },
+      include: { guest: { select: { id: true, name: true, group: true, token: true, status: true } } },
     });
     return NextResponse.json(rsvps);
   } catch (err) {

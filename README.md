@@ -63,13 +63,27 @@ docker compose down                       # arrête tout (ajouter -v pour suppri
 - **Prisma 7** : le moteur par défaut (`"client"`, sans binaire Rust) exige un *driver adapter*. Ajout de `@prisma/adapter-mariadb` + `mariadb`, branché dans `lib/prisma.ts`.
 - **`/rsvp`** : `useSearchParams()` utilisé sans `<Suspense>`, ce qui cassait le build statique. Le composant a été scindé (`RsvpContent` + wrapper `RsvpPage` avec `<Suspense>`).
 
-### À faire avant un vrai déploiement
+### Déploiement en production — état actuel
 
-- Préparer le `.env` réel sur le VPS (voir `.env.example` pour la liste des variables) — ne jamais transmettre les vraies valeurs par chat non chiffré.
-- Renseigner les vraies clés **Cloudinary** dans le `.env` du VPS (voir section suivante) — sans elles, l'upload d'images dans le dashboard échoue.
-- Créer le premier compte admin en prod via `npx tsx scripts/create-admin.ts --email=... --password=...` (voir section suivante).
-- Décider avec le frère du mode de transfert du code vers le VPS (repo Git distant à créer, ou rsync/scp) et de la mise en place d'un reverse proxy (nginx/Caddy + HTTPS) devant le port 3000.
-- Clé SSH dédiée générée pour l'accès au VPS : `~/.ssh/mariage` (privée, à ne jamais partager) / `~/.ssh/mariage.pub` (publique, transmise au frère pour `authorized_keys`).
+Le site est en ligne : **https://josianeetstephane.fr** (VPS Ubuntu 24.04, IP `51.75.21.221`).
+
+- **Accès** : uniquement par clé SSH dédiée `~/.ssh/mariage` (utilisateur `ubuntu`) — l'authentification par mot de passe a été désactivée côté serveur (`/etc/ssh/sshd_config.d/50-cloud-init.conf`), le mot de passe initial transmis par le frère n'est plus utilisable.
+- **Reverse proxy / HTTPS** : Caddy (`/etc/caddy/Caddyfile`), certificat Let's Encrypt automatique et renouvelé tout seul. Service `caddy` activé au démarrage.
+- **Pare-feu** : `ufw` actif, seuls les ports 22 (SSH), 80 et 443 sont ouverts.
+- **App** : code dans `~/mariage-sj` sur le serveur, lancé via `docker compose up -d` (services `app` + `db`, `restart: unless-stopped` → redémarre automatiquement si le serveur reboote).
+- **Base de données** : les 168 invités importés sont en place. Le `.env` de prod (mots de passe DB générés aléatoirement, `NEXTAUTH_SECRET` dédié) vit uniquement sur le serveur dans `~/mariage-sj/.env` (permissions 600) — jamais commité, jamais transmis par chat.
+- **Compte admin** créé (`nataltek@gmail.com`), mot de passe généré aléatoirement et communiqué une seule fois à Samuel.
+
+### Reste à faire
+
+- **Cloudinary** : clés pas encore renseignées → l'upload d'images depuis le dashboard admin ne fonctionnera pas tant qu'elles ne sont pas ajoutées dans le `.env` du serveur (voir section suivante).
+- Si le mot de passe VPS d'origine (transmis par le frère) est réutilisé ailleurs, le faire changer côté panel d'hébergement — il n'est plus exploitable en SSH mais reste valable pour une éventuelle console web du fournisseur.
+
+## Invités & liens RSVP personnalisés
+
+Chaque invité importé via `/admin/guests` reçoit un code unique (`token`) et un lien personnel `/rsvp?g=<token>` qui pré-remplit son nom et lui permet de confirmer sa présence, choisir son menu et indiquer le nombre de personnes.
+
+> **À faire avant l'envoi des invitations** : Samuel doit transmettre le fichier avec la liste des invités (nom, téléphone, adresse, groupe) pour l'import via `/admin/guests` → bouton "Import CSV" (format attendu : `nom,téléphone,adresse,groupe`, une ligne par invité).
 
 ## Authentification & Dashboard de contenu (CMS léger)
 

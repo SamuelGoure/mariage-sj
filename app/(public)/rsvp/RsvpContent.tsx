@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import {
-  Heart, CheckCircle, Send, Users, Sparkles,
+  Heart, Send, Users, Sparkles, Plus, X,
   MapPin, Clock, CalendarDays, Train, ChevronRight,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -17,14 +17,7 @@ import { FloralDivider, RingsIcon, FloralCorner } from "@/components/ui/decorati
 import { formatLongDateFr, formatDeadlineFr } from "@/lib/utils";
 import type { GeneralContent, VenuesContent } from "@/lib/content/sections";
 
-type Step = "form" | "success" | "decline";
-
-const meals = [
-  { id: "standard",   label: "Menu Standard",  desc: "Volaille ou bœuf",          icon: "🍗" },
-  { id: "fish",       label: "Menu Poisson",    desc: "Poisson grillé",            icon: "🐟" },
-  { id: "vegetarian", label: "Végétarien",      desc: "Sans viande ni poisson",    icon: "🥗" },
-  { id: "child",      label: "Menu Enfant",     desc: "Pour les moins de 12 ans",  icon: "🍭" },
-];
+type Step = "code" | "form" | "success" | "decline";
 
 function FadeIn({ children, className, delay = 0, direction = "up" }: {
   children: React.ReactNode; className?: string; delay?: number;
@@ -51,7 +44,7 @@ export default function RsvpContent({
   general, venues,
 }: { general: GeneralContent; venues: VenuesContent }) {
   const searchParams = useSearchParams();
-  const guestToken = searchParams.get("g") ?? "";
+  const urlToken = searchParams.get("g") ?? "";
 
   const names = general.nameOrder.map((role) => (role === "bride" ? general.brideName : general.groomName));
   const fullNames = names.join(" & ");
@@ -85,49 +78,88 @@ export default function RsvpContent({
     },
   ];
 
-  const [step, setStep] = useState<Step>("form");
+  const [step, setStep] = useState<Step>(urlToken ? "form" : "code");
+  const [guestToken, setGuestToken] = useState(urlToken);
   const [attending, setAttending] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [guestName, setGuestName] = useState("");
 
+  const [codeInput, setCodeInput] = useState("");
+  const [codeError, setCodeError] = useState("");
+  const [codeChecking, setCodeChecking] = useState(false);
+  const [seatsAllowed, setSeatsAllowed] = useState(4);
+  const [codeHoneypot, setCodeHoneypot] = useState(""); // anti-spam : ce champ doit rester vide (invisible pour un humain)
+
   const [form, setForm] = useState({
-    firstName: "", lastName: "", guestCount: "1",
-    mealChoices: [] as string[], allergies: "", message: "",
+    name: "", companions: [] as string[], message: "",
   });
 
-  // Pré-remplir depuis le token guest
+  function applyGuest(data: { name: string; seatsAllowed?: number }) {
+    setGuestName(data.name);
+    setForm(f => ({ ...f, name: data.name }));
+    if (data.seatsAllowed) setSeatsAllowed(data.seatsAllowed);
+  }
+
+  // Pré-remplir depuis le token présent dans le lien
   useEffect(() => {
-    if (!guestToken) return;
-    fetch(`/api/guests/by-token/${guestToken}`)
+    if (!urlToken) return;
+    fetch(`/api/guests/by-token/${urlToken}`)
       .then(r => r.ok ? r.json() : null)
       .then(data => {
-        if (!data) return;
-        setGuestName(data.name);
-        const parts = data.name.trim().split(" ");
-        const firstName = parts[0] ?? "";
-        const lastName = parts.slice(1).join(" ") ?? "";
-        setForm(f => ({ ...f, firstName, lastName }));
+        if (!data) {
+          setStep("code");
+          setCodeError("Ce lien n'est plus valide. Merci de saisir votre code d'invitation.");
+          return;
+        }
+        applyGuest(data);
+      })
+      .catch(() => {
+        setStep("code");
+        setCodeError("Impossible de vérifier votre lien. Merci de saisir votre code d'invitation.");
       });
-  }, [guestToken]);
+  }, [urlToken]);
+
+  function submitCode(e: React.FormEvent) {
+    e.preventDefault();
+    if (codeHoneypot) return; // champ honeypot rempli → soumission de bot, on ignore silencieusement
+    const code = codeInput.trim().toUpperCase();
+    if (!code) return;
+    setCodeChecking(true);
+    setCodeError("");
+    fetch(`/api/guests/by-token/${encodeURIComponent(code)}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data) { setCodeError("Code invalide. Vérifiez et réessayez."); return; }
+        applyGuest(data);
+        setGuestToken(code);
+        setStep("form");
+      })
+      .catch(() => setCodeError("Impossible de vérifier le code, réessayez."))
+      .finally(() => setCodeChecking(false));
+  }
 
   function set(field: string, value: string) {
     setForm((f) => ({ ...f, [field]: value }));
   }
-  function toggleMeal(id: string) {
-    setForm((f) => ({
-      ...f,
-      mealChoices: f.mealChoices.includes(id)
-        ? f.mealChoices.filter((m) => m !== id)
-        : [...f.mealChoices, id],
-    }));
+
+  const maxCompanions = Math.max(0, seatsAllowed - 1);
+
+  function addCompanion() {
+    setForm(f => f.companions.length >= maxCompanions ? f : { ...f, companions: [...f.companions, ""] });
+  }
+  function updateCompanion(index: number, value: string) {
+    setForm(f => ({ ...f, companions: f.companions.map((c, i) => i === index ? value : c) }));
+  }
+  function removeCompanion(index: number) {
+    setForm(f => ({ ...f, companions: f.companions.filter((_, i) => i !== index) }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    if (!form.firstName.trim() || !form.lastName.trim()) {
-      setError("Merci de renseigner votre prénom et nom.");
+    if (!form.name.trim()) {
+      setError("Merci de renseigner votre nom complet.");
       return;
     }
     setLoading(true);
@@ -136,9 +168,8 @@ export default function RsvpContent({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          firstName: form.firstName, lastName: form.lastName,
-          attending, guestCount: parseInt(form.guestCount),
-          mealChoice: form.mealChoices, allergies: form.allergies, message: form.message,
+          name: form.name, attending,
+          companions: form.companions, message: form.message,
           guestToken: guestToken || undefined,
         }),
       });
@@ -234,6 +265,53 @@ export default function RsvpContent({
         <div className="max-w-2xl mx-auto">
           <AnimatePresence mode="wait">
 
+            {/* ─ État : saisie du code d'invitation ─ */}
+            {step === "code" && (
+              <motion.div key="code"
+                initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -24 }} transition={{ duration: 0.5 }}>
+                <div className="bg-white rounded-3xl p-8 sm:p-10 border border-rose-100 shadow-sm text-center max-w-md mx-auto">
+                  <div className="w-16 h-16 mx-auto rounded-full bg-[#e91e8c]/10 flex items-center justify-center mb-5">
+                    <Heart className="w-7 h-7 text-[#e91e8c]" />
+                  </div>
+                  <h2 className="font-heading text-3xl text-[#1A2B5F] mb-2">Votre invitation</h2>
+                  <p className="text-muted-foreground text-sm mb-7">
+                    Entrez le code à 4 caractères indiqué sur votre carton d&apos;invitation.
+                  </p>
+                  <form onSubmit={submitCode} className="flex flex-col gap-4">
+                    {/* Honeypot anti-spam : invisible pour un humain, les bots le remplissent */}
+                    <input
+                      type="text"
+                      name="website"
+                      value={codeHoneypot}
+                      onChange={(e) => setCodeHoneypot(e.target.value)}
+                      tabIndex={-1}
+                      autoComplete="off"
+                      aria-hidden="true"
+                      className="absolute left-[-9999px] top-auto w-px h-px overflow-hidden opacity-0 pointer-events-none"
+                    />
+                    <Input
+                      value={codeInput}
+                      onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
+                      maxLength={4}
+                      placeholder="XXXX"
+                      autoFocus
+                      className="text-center text-2xl tracking-[0.5em] font-semibold uppercase border-rose-200 focus-visible:ring-[#e91e8c] rounded-xl h-14"
+                    />
+                    {codeError && (
+                      <p className="text-sm text-red-500 bg-red-50 py-2.5 px-4 rounded-xl border border-red-100">
+                        {codeError}
+                      </p>
+                    )}
+                    <Button type="submit" disabled={codeChecking || !codeInput.trim()}
+                      className="w-full py-6 rounded-full text-base font-semibold bg-[#e91e8c] hover:bg-[#c4177a] text-white shadow-lg hover:shadow-xl transition-all">
+                      {codeChecking ? "Vérification…" : "Voir mon invitation"}
+                    </Button>
+                  </form>
+                </div>
+              </motion.div>
+            )}
+
             {/* ─ État : formulaire ─ */}
             {step === "form" && (
               <motion.div key="form"
@@ -294,81 +372,58 @@ export default function RsvpContent({
                         <h3 className="font-heading text-2xl text-[#1A2B5F]">Vos coordonnées</h3>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
-                        <div className="flex flex-col gap-2">
-                          <Label htmlFor="firstName" className="text-sm text-[#1A2B5F] font-medium">Prénom *</Label>
-                          <Input id="firstName" placeholder="Votre prénom" value={form.firstName}
-                            onChange={(e) => set("firstName", e.target.value)}
-                            className="border-rose-200 focus-visible:ring-[#e91e8c] rounded-xl h-11" required />
-                        </div>
-                        <div className="flex flex-col gap-2">
-                          <Label htmlFor="lastName" className="text-sm text-[#1A2B5F] font-medium">Nom *</Label>
-                          <Input id="lastName" placeholder="Votre nom" value={form.lastName}
-                            onChange={(e) => set("lastName", e.target.value)}
-                            className="border-rose-200 focus-visible:ring-[#e91e8c] rounded-xl h-11" required />
-                        </div>
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="name" className="text-sm text-[#1A2B5F] font-medium">Nom complet *</Label>
+                        <Input id="name" placeholder="Votre prénom et nom" value={form.name}
+                          onChange={(e) => set("name", e.target.value)}
+                          className="border-rose-200 focus-visible:ring-[#e91e8c] rounded-xl h-11" required />
                       </div>
-
-                      {attending && (
-                        <div className="flex flex-col gap-2">
-                          <Label className="text-sm text-[#1A2B5F] font-medium">Nombre de personnes</Label>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            {[1, 2, 3, 4, 5].map((n) => (
-                              <button key={n} type="button" onClick={() => set("guestCount", String(n))}
-                                className={`w-11 h-11 rounded-full text-sm font-semibold transition-all ${form.guestCount === String(n) ? "bg-[#e91e8c] text-white shadow-md scale-110" : "bg-rose-50 text-[#1A2B5F] hover:bg-rose-100"}`}>
-                                {n}
-                              </button>
-                            ))}
-                            <button type="button" onClick={() => set("guestCount", "6+")}
-                              className={`px-4 h-11 rounded-full text-sm font-semibold transition-all ${form.guestCount === "6+" ? "bg-[#e91e8c] text-white shadow-md" : "bg-rose-50 text-[#1A2B5F] hover:bg-rose-100"}`}>
-                              6+
-                            </button>
-                          </div>
-                        </div>
-                      )}
                     </div>
 
-                    {/* Menu */}
+                    {/* Accompagnants */}
                     {attending && (
                       <div className="bg-white rounded-3xl p-7 border border-rose-100 shadow-sm">
                         <div className="flex items-center gap-2.5 mb-1">
-                          <div className="w-8 h-8 rounded-full bg-[#e91e8c]/10 flex items-center justify-center shrink-0 text-base">
-                            🍽️
+                          <div className="w-8 h-8 rounded-full bg-[#e91e8c]/10 flex items-center justify-center shrink-0">
+                            <Users className="w-4 h-4 text-[#e91e8c]" />
                           </div>
-                          <h3 className="font-heading text-2xl text-[#1A2B5F]">Choix du repas</h3>
+                          <h3 className="font-heading text-2xl text-[#1A2B5F]">Vos accompagnants</h3>
                         </div>
-                        <p className="text-xs text-muted-foreground mb-5 ml-10">Sélectionnez un menu par convive</p>
-                        <div className="grid grid-cols-2 gap-3">
-                          {meals.map(({ id, label, desc, icon }) => {
-                            const selected = form.mealChoices.includes(id);
-                            return (
-                              <button key={id} type="button" onClick={() => toggleMeal(id)}
-                                className={`relative flex flex-col items-start gap-1 p-4 rounded-2xl border text-left transition-all ${selected ? "border-[#e91e8c] bg-[#e91e8c]/5 ring-1 ring-[#e91e8c]" : "border-rose-100 bg-rose-50/40 hover:border-[#e91e8c]/40"}`}>
-                                <span className="text-2xl mb-1">{icon}</span>
-                                <span className="text-sm font-semibold text-[#1A2B5F]">{label}</span>
-                                <span className="text-xs text-muted-foreground">{desc}</span>
-                                {selected && (
-                                  <CheckCircle className="absolute top-3 right-3 w-4 h-4 text-[#e91e8c]" />
-                                )}
-                              </button>
-                            );
-                          })}
-                        </div>
+                        <p className="text-xs text-muted-foreground mb-5 ml-10">
+                          Vous pouvez venir avec {maxCompanions} personne{maxCompanions > 1 ? "s" : ""} en plus de vous
+                          {maxCompanions === 0 ? " (invitation individuelle)" : ""}.
+                        </p>
+
+                        {form.companions.length > 0 && (
+                          <div className="flex flex-col gap-3 mb-4">
+                            {form.companions.map((c, i) => (
+                              <div key={i} className="flex items-center gap-2">
+                                <Input
+                                  value={c}
+                                  onChange={(e) => updateCompanion(i, e.target.value)}
+                                  placeholder="Prénom et nom de l'invité(e)"
+                                  className="border-rose-200 focus-visible:ring-[#e91e8c] rounded-xl h-11"
+                                />
+                                <button type="button" onClick={() => removeCompanion(i)}
+                                  className="w-9 h-9 shrink-0 rounded-full flex items-center justify-center bg-rose-50 text-[#1A2B5F]/60 hover:bg-red-50 hover:text-red-500 transition-colors">
+                                  <X className="w-4 h-4" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {form.companions.length < maxCompanions && (
+                          <button type="button" onClick={addCompanion}
+                            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-[#e91e8c] bg-[#e91e8c]/8 hover:bg-[#e91e8c]/15 transition-colors">
+                            <Plus className="w-4 h-4" /> Ajouter un invité
+                          </button>
+                        )}
                       </div>
                     )}
 
-                    {/* Allergies + Message */}
+                    {/* Message */}
                     <div className="bg-white rounded-3xl p-7 border border-rose-100 shadow-sm flex flex-col gap-5">
-                      {attending && (
-                        <div className="flex flex-col gap-2">
-                          <Label htmlFor="allergies" className="text-sm text-[#1A2B5F] font-medium">
-                            Allergies / régimes alimentaires
-                          </Label>
-                          <Input id="allergies" placeholder="Ex : sans gluten, végane, sans lactose…" value={form.allergies}
-                            onChange={(e) => set("allergies", e.target.value)}
-                            className="border-rose-200 focus-visible:ring-[#e91e8c] rounded-xl h-11" />
-                        </div>
-                      )}
                       <div className="flex flex-col gap-2">
                         <Label htmlFor="message" className="text-sm text-[#1A2B5F] font-medium">
                           Un mot pour les mariés
