@@ -27,7 +27,7 @@ const highlights = [
   {
     icon: Clock,
     label: "Réception",
-    time: "20h00",
+    time: null,
     desc: "Dîner & soirée dansante",
     img: "/lieu_reception.png",
   },
