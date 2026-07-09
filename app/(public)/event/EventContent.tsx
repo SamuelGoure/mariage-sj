@@ -49,8 +49,8 @@ export default function EventContent({
       {/* ── HERO ── */}
       <section className="relative h-[70vh] min-h-[500px] flex items-end justify-center overflow-hidden">
         <Image
-          src="https://images.unsplash.com/photo-1519741497674-611481863552?w=1600&q=80"
-          alt="Salle de mariage"
+          src="/jands.jpg"
+          alt="Josiane & Stéphane"
           fill priority
           className="object-cover object-center"
         />
@@ -250,7 +250,7 @@ export default function EventContent({
                 color: "#e91e8c",
                 bg: "#e91e8c",
                 title: "Dress Code",
-                img: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=400&q=80",
+                img: "/dress_code.jpeg",
                 content: (
                   <p className="text-sm text-muted-foreground leading-relaxed">
                     <strong className="text-[#1A2B5F]">Tenue de soirée</strong> recommandée.<br /><br />
@@ -264,7 +264,7 @@ export default function EventContent({
                 color: "#4A90D9",
                 bg: "#4A90D9",
                 title: "Parking & Transport",
-                img: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=400&q=80",
+                img: "/packing.png",
                 content: (
                   <p className="text-sm text-muted-foreground leading-relaxed">
                     Parking <strong className="text-[#1A2B5F]">gratuit et sécurisé</strong> sur place.<br /><br />

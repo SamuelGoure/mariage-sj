@@ -185,8 +185,8 @@ export default async function HomePage() {
       {/* ── CTA RSVP ──────────────────────────────────────────── */}
       <section className="relative py-24 md:py-32 overflow-hidden">
         <Image
-          src="https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=1600&q=80"
-          alt="CTA fond"
+          src="/jands.jpg"
+          alt="Josiane & Stéphane"
           fill className="object-cover object-center"
         />
         <div className="absolute inset-0 bg-[#1A2B5F]/85" />

@@ -45,7 +45,7 @@ export const venuesDefault: VenuesContent = {
     timeText: "Accueil dès 10h00",
     mapsUrl: "https://maps.app.goo.gl/kmw34DX4zkXmRB5h7",
     phone: "+2250000000000",
-    image: "https://images.unsplash.com/photo-1478146059778-26028b07395a?w=800&q=80",
+    image: "/mairie_orsay.webp",
   },
   reception: {
     name: "Etoile 91, Palais Groupe",
@@ -53,7 +53,7 @@ export const venuesDefault: VenuesContent = {
     // horaire pas encore arrêté
     mapsUrl: "https://maps.app.goo.gl/uHbBxemjFjTj37A39",
     phone: "+2250000000000",
-    image: "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=800&q=80",
+    image: "/lieu_reception.png",
   },
 };
 

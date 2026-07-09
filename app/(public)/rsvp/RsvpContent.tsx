@@ -185,8 +185,8 @@ export default function RsvpContent({
       {/* ── 1. HERO ─────────────────────────────────────────────── */}
       <section className="relative h-[60vh] min-h-[440px] flex items-end justify-center overflow-hidden">
         <Image
-          src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=1600&q=80"
-          alt="RSVP fond"
+          src="/jands.jpg"
+          alt="Josiane & Stéphane"
           fill priority
           className="object-cover object-center"
         />
