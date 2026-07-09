@@ -15,21 +15,21 @@ const highlights = [
     label: "Cérémonie",
     time: "15h00",
     desc: "L'échange des vœux",
-    img: "https://images.unsplash.com/photo-1478146059778-26028b07395a?w=600&q=80",
+    img: "/mairie_orsay.webp",
   },
   {
     icon: Music,
     label: "Cocktail",
     time: "17h30",
     desc: "Musique & célébration",
-    img: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=600&q=80",
+    img: "/palais-groupe.jpg",
   },
   {
     icon: Clock,
     label: "Réception",
     time: "20h00",
     desc: "Dîner & soirée dansante",
-    img: "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=600&q=80",
+    img: "/lieu_reception.png",
   },
 ];
 
