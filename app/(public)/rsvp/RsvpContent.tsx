@@ -2,8 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
+import ParallaxImage from "@/components/ui/ParallaxImage";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import {
   Heart, Send, Users, Sparkles, Plus, X,
@@ -50,33 +50,6 @@ export default function RsvpContent({
   const fullNames = names.join(" & ");
   const weddingDateText = formatLongDateFr(general.weddingDate);
   const rsvpDeadlineText = formatDeadlineFr(general.rsvpDeadline);
-
-  const infos = [
-    {
-      icon: CalendarDays,
-      color: "#e91e8c",
-      bg: "bg-[#e91e8c]/8",
-      label: "Date & Heure",
-      value: weddingDateText,
-      sub: venues.ceremony.timeText,
-    },
-    {
-      icon: MapPin,
-      color: "#4A90D9",
-      bg: "bg-[#4A90D9]/8",
-      label: "Lieu",
-      value: venues.ceremony.name,
-      sub: venues.ceremony.address,
-    },
-    {
-      icon: Train,
-      color: "#1A2B5F",
-      bg: "bg-[#1A2B5F]/6",
-      label: "Accès",
-      value: "RER B — Orsay-Ville",
-      sub: "7 mins à pied · parking gratuit",
-    },
-  ];
 
   const [step, setStep] = useState<Step>(urlToken ? "form" : "code");
   const [guestToken, setGuestToken] = useState(urlToken);
@@ -184,12 +157,7 @@ export default function RsvpContent({
 
       {/* ── 1. HERO ─────────────────────────────────────────────── */}
       <section className="relative h-[60vh] min-h-[440px] flex items-end justify-center overflow-hidden">
-        <Image
-          src="/jands.jpg"
-          alt="Josiane & Stéphane"
-          fill priority
-          className="object-cover object-center"
-        />
+        <ParallaxImage src="/jands.jpg" alt="Josiane & Stéphane" priority />
         {/* Overlays */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#1A2B5F] via-[#1A2B5F]/50 to-transparent" />
         <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/40 to-transparent" />
@@ -238,26 +206,6 @@ export default function RsvpContent({
             — {fullNames}
           </p>
         </FadeIn>
-      </section>
-
-      {/* ── 3. INFOS CLÉS ────────────────────────────────────────── */}
-      <section className="py-10 px-6 bg-gradient-wedding">
-        <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {infos.map(({ icon: Icon, color, bg, label, value, sub }, i) => (
-            <FadeIn key={label} delay={i * 0.1} direction="up">
-              <div className="bg-white rounded-2xl p-5 border border-rose-50 shadow-sm flex items-start gap-4">
-                <div className={`shrink-0 w-11 h-11 rounded-xl flex items-center justify-center ${bg}`}>
-                  <Icon className="w-5 h-5" style={{ color }} />
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium mb-1">{label}</p>
-                  <p className="font-heading text-lg text-[#1A2B5F] leading-tight">{value}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>
-                </div>
-              </div>
-            </FadeIn>
-          ))}
-        </div>
       </section>
 
       {/* ── 4. FORMULAIRE ────────────────────────────────────────── */}

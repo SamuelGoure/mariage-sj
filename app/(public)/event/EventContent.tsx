@@ -6,6 +6,7 @@ import Image from "next/image";
 import { MapPin, Clock, Car, Shirt, Heart, Music, UtensilsCrossed, Baby, Navigation, Phone, Sparkles } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { RingsIcon, FloralDivider, FloralCorner, WaveDivider } from "@/components/ui/decorations";
+import ParallaxImage from "@/components/ui/ParallaxImage";
 import type { GeneralContent, VenuesContent, EventFaqContent } from "@/lib/content/sections";
 import { formatLongDateFr } from "@/lib/utils";
 
@@ -48,12 +49,7 @@ export default function EventContent({
 
       {/* ── HERO ── */}
       <section className="relative h-[70vh] min-h-[500px] flex items-end justify-center overflow-hidden">
-        <Image
-          src="/jands.jpg"
-          alt="Josiane & Stéphane"
-          fill priority
-          className="object-cover object-center"
-        />
+        <ParallaxImage src="/jands.jpg" alt="Josiane & Stéphane" priority />
         <div className="absolute inset-0 bg-gradient-to-t from-[#1A2B5F]/90 via-[#1A2B5F]/30 to-transparent" />
         {/* Coins floraux */}
         <FloralCorner className="absolute top-4 left-4 w-24 h-24 opacity-60" />
@@ -288,7 +284,7 @@ export default function EventContent({
               },
             ].map(({ icon: Icon, color, bg, title, img, content }, i) => (
               <FadeIn key={title} delay={i * 0.1}>
-                <div className="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow h-full flex flex-col">
+                <div className="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 h-full flex flex-col">
                   <div className="relative h-32 overflow-hidden">
                     <Image src={img} alt={title} fill className="object-cover" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
@@ -310,11 +306,7 @@ export default function EventContent({
       {/* ── FAQ ── */}
       <section className="py-24 px-6 relative overflow-hidden">
         <div className="absolute inset-0">
-          <Image
-            src="https://images.unsplash.com/photo-1507692049790-de58290a4334?w=1600&q=80"
-            alt="FAQ fond"
-            fill className="object-cover object-center"
-          />
+          <ParallaxImage src="https://images.unsplash.com/photo-1507692049790-de58290a4334?w=1600&q=80" alt="FAQ fond" />
           <div className="absolute inset-0 bg-[#1A2B5F]/92" />
         </div>
         <div className="relative z-10 max-w-3xl mx-auto">

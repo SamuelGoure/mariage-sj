@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Heart, MapPin, Clock, Music, Sparkles } from "lucide-react";
 import Countdown from "@/components/home/Countdown";
 import FadeIn from "@/components/home/FadeIn";
+import ParallaxImage from "@/components/ui/ParallaxImage";
 import { RingsIcon, FloralDivider, FloralCorner, HeartBeat, WaveDivider } from "@/components/ui/decorations";
 import { getGeneral } from "@/lib/content";
 import { formatLongDateFr, formatDeadlineFr } from "@/lib/utils";
@@ -45,13 +46,7 @@ export default async function HomePage() {
       <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
         {/* Background photo — pas encore reliée au CMS (general ne couvre pas encore les images de la home) */}
         <div className="absolute inset-0" aria-hidden>
-          <Image
-            src="/jands.jpg"
-            alt="Josiane & Stéphane"
-            fill
-            priority
-            className="object-cover object-center"
-          />
+          <ParallaxImage src="/jands.jpg" alt="Josiane & Stéphane" priority />
           <div className="absolute inset-0 bg-hero-overlay" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(26,43,95,0.55),transparent_65%)]" />
           {/* Dégradé haut pour lisibilité de la navbar */}
@@ -186,11 +181,7 @@ export default async function HomePage() {
 
       {/* ── CTA RSVP ──────────────────────────────────────────── */}
       <section className="relative py-24 md:py-32 overflow-hidden">
-        <Image
-          src="/jands.jpg"
-          alt="Josiane & Stéphane"
-          fill className="object-cover object-center"
-        />
+        <ParallaxImage src="/jands.jpg" alt="Josiane & Stéphane" />
         <div className="absolute inset-0 bg-[#1A2B5F]/85" />
         <div className="relative z-10 max-w-2xl mx-auto px-6 flex flex-col items-center gap-8 text-center">
           <FadeIn>

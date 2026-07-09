@@ -20,8 +20,8 @@ function getTimeLeft(weddingDate: string) {
 
 function Unit({ value, label }: { value: number; label: string }) {
   return (
-    <div className="flex flex-col items-center gap-3">
-      <div className="relative px-5 py-4 md:px-7 md:py-5 rounded-2xl bg-white/8 border border-white/10 backdrop-blur-sm overflow-hidden">
+    <div className="flex flex-col items-center gap-1.5 sm:gap-3">
+      <div className="relative px-2.5 py-2 sm:px-5 sm:py-4 md:px-7 md:py-5 rounded-xl sm:rounded-2xl bg-white/8 border border-white/10 backdrop-blur-sm overflow-hidden">
         {/* Reflet haut */}
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
         <motion.span
@@ -29,12 +29,12 @@ function Unit({ value, label }: { value: number; label: string }) {
           initial={{ y: -14, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-          className="block font-heading text-6xl md:text-8xl font-light text-white tabular-nums leading-none"
+          className="block font-heading text-3xl sm:text-6xl md:text-8xl font-light text-white tabular-nums leading-none"
         >
           {pad(value)}
         </motion.span>
       </div>
-      <span className="text-xs uppercase tracking-[0.3em] text-[#F4A7B9] font-medium">
+      <span className="text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[#F4A7B9] font-medium">
         {label}
       </span>
     </div>
@@ -43,7 +43,7 @@ function Unit({ value, label }: { value: number; label: string }) {
 
 function Sep() {
   return (
-    <span className="font-heading text-4xl md:text-6xl text-[#F4A7B9]/50 self-start mt-5 leading-none select-none pb-6">
+    <span className="font-heading text-xl sm:text-4xl md:text-6xl text-[#F4A7B9]/50 self-start mt-2 sm:mt-5 leading-none select-none pb-4 sm:pb-6">
       :
     </span>
   );
@@ -58,7 +58,7 @@ export default function Countdown({ weddingDate }: { weddingDate: string }) {
   }, [weddingDate]);
 
   return (
-    <div className="flex items-end gap-3 md:gap-5">
+    <div className="flex items-end justify-center gap-1.5 sm:gap-3 md:gap-5 px-2">
       <Unit value={time.days}    label="Jours" />
       <Sep />
       <Unit value={time.hours}   label="Heures" />
