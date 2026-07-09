@@ -278,7 +278,7 @@ export default function EventContent({
                 color: "#e91e8c",
                 bg: "#F4A7B9",
                 title: "Enfants",
-                img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&q=80",
+                img: "/enfants.jpeg",
                 content: (
                   <p className="text-sm text-muted-foreground leading-relaxed">
                     Les enfants sont <strong className="text-[#1A2B5F]">les bienvenus</strong> à la cérémonie et au cocktail.<br /><br />

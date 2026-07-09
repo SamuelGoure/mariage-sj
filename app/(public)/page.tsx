@@ -13,14 +13,14 @@ const highlights = [
   {
     icon: Heart,
     label: "Cérémonie",
-    time: "15h00",
+    time: null,
     desc: "L'échange des vœux",
     img: "/mairie_orsay.webp",
   },
   {
     icon: Music,
     label: "Cocktail",
-    time: "17h30",
+    time: null,
     desc: "Musique & célébration",
     img: "/palais-groupe.jpg",
   },
@@ -165,7 +165,9 @@ export default async function HomePage() {
                     </div>
                   </div>
                   <div className="p-6 flex flex-col items-center gap-2 bg-gradient-to-b from-white to-rose-50/20">
-                    <p className="font-heading text-3xl font-light italic text-[#e91e8c]">{time}</p>
+                    {time && (
+                      <p className="font-heading text-3xl font-light italic text-[#e91e8c]">{time}</p>
+                    )}
                     <p className="text-sm text-muted-foreground text-center">{desc}</p>
                   </div>
                 </div>
