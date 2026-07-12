@@ -31,6 +31,7 @@ model Guest {
   token        String      @unique @db.VarChar(64)
   seatsAllowed Int         @default(4) @map("seats_allowed")
   status       GuestStatus @default(PENDING)
+  ticketSentAt DateTime?   @map("ticket_sent_at")
   rsvp         Rsvp?
   createdAt    DateTime    @default(now()) @map("created_at")
 

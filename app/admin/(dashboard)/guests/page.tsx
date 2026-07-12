@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import {
   Users, UserCheck, UserX, Clock, ShieldQuestion, Search, Plus, Upload,
-  Copy, Trash2, Pencil, QrCode, Download, ChevronDown, X, Check,
+  Copy, Trash2, Pencil, QrCode, Download, ChevronDown, X, Check, Send,
 } from "lucide-react";
 import QRCode from "qrcode";
 
@@ -16,6 +16,7 @@ type Guest = {
   token: string;
   seatsAllowed: number;
   status: GuestStatus;
+  ticketSentAt: string | null;
   rsvp: { id: number; attending: boolean; guestCount: number; companions: string[] | null; email: string | null; phone: string | null } | null;
   createdAt: string;
 };
@@ -63,6 +64,8 @@ export default function AdminGuestsPage() {
   const [qrGuest, setQrGuest] = useState<Guest | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+  const [sendingTicket, setSendingTicket] = useState<number | null>(null);
+  const [ticketError, setTicketError] = useState<{ id: number; message: string } | null>(null);
 
   // Formulaire ajout
   const [form, setForm] = useState({ name: "", token: "", seatsAllowed: "4" });
@@ -111,6 +114,21 @@ export default function AdminGuestsPage() {
     setForm({ name: "", token: "", seatsAllowed: "4" });
     setShowAddModal(false);
     load();
+  }
+
+  async function sendTicket(guest: Guest) {
+    setSendingTicket(guest.id);
+    setTicketError(null);
+    try {
+      const res = await fetch(`/api/guests/${guest.id}/send-ticket`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) { setTicketError({ id: guest.id, message: data.error || "Erreur lors de l'envoi." }); return; }
+      setGuests(prev => prev.map(g => g.id === guest.id ? { ...g, ticketSentAt: data.ticketSentAt } : g));
+    } catch {
+      setTicketError({ id: guest.id, message: "Impossible de joindre le serveur." });
+    } finally {
+      setSendingTicket(null);
+    }
   }
 
   async function deleteGuest(id: number) {
@@ -358,6 +376,26 @@ export default function AdminGuestsPage() {
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex items-center justify-end gap-2">
+                        {g.status === "CONFIRMED" && g.rsvp?.email && (
+                          <button
+                            onClick={() => sendTicket(g)}
+                            disabled={sendingTicket === g.id}
+                            title={
+                              ticketError?.id === g.id ? ticketError.message
+                              : g.ticketSentAt ? `Billet envoyé le ${new Date(g.ticketSentAt).toLocaleDateString("fr-FR")} — renvoyer`
+                              : "Envoyer le billet par email"
+                            }
+                            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors disabled:opacity-40 ${
+                              ticketError?.id === g.id ? "bg-red-500/20 text-red-400"
+                              : g.ticketSentAt ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30"
+                              : "bg-white/10 text-white/60 hover:bg-white/20 hover:text-white"
+                            }`}
+                          >
+                            {sendingTicket === g.id
+                              ? <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                              : g.ticketSentAt ? <Check className="w-3.5 h-3.5" /> : <Send className="w-3.5 h-3.5" />}
+                          </button>
+                        )}
                         <button onClick={() => copyLink(g)} title="Copier le lien RSVP"
                           className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/10 hover:bg-white/20 text-white/60 hover:text-white transition-colors">
                           {copied === g.id ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}

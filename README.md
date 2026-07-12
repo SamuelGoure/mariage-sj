@@ -77,6 +77,7 @@ Le site est en ligne : **https://josianeetstephane.fr** (VPS Ubuntu 24.04, IP `5
 ### Reste à faire
 
 - **Cloudinary** : clés pas encore renseignées → l'upload d'images depuis le dashboard admin ne fonctionnera pas tant qu'elles ne sont pas ajoutées dans le `.env` du serveur (voir section suivante).
+- **Resend** : clé pas encore renseignée → le bouton "Envoyer le billet" dans `/admin/guests` échouera tant qu'elle n'est pas ajoutée dans le `.env` du serveur (voir section "Envoi des billets par email").
 - Si le mot de passe VPS d'origine (transmis par le frère) est réutilisé ailleurs, le faire changer côté panel d'hébergement — il n'est plus exploitable en SSH mais reste valable pour une éventuelle console web du fournisseur.
 
 ## Invités & liens RSVP personnalisés
@@ -133,3 +134,30 @@ Pas encore configuré. Pour tester l'upload de photos depuis le dashboard (ongle
 3. Redémarrer le serveur
 
 `next.config.ts` autorise déjà le domaine `res.cloudinary.com` pour `next/image`.
+
+## Envoi des billets par email (Resend)
+
+Dans `/admin/guests`, chaque invité au statut **Confirmé** avec un email renseigné a un bouton "Envoyer le billet" (icône avion en papier). Il génère le QR code d'accès et l'envoie par email (pièce jointe + aperçu dans le corps du mail). Une fois envoyé, le bouton passe au vert avec la date d'envoi (survol pour voir), et redevient cliquable pour renvoyer si besoin.
+
+### Fichiers ajoutés
+
+- `lib/email.ts` — client Resend + template HTML du billet
+- `app/api/guests/[id]/send-ticket/route.ts` — génère le QR code (`qrcode`, déjà utilisé pour le QR admin existant) et envoie l'email ; vérifie que l'invité est confirmé et a un email avant d'envoyer
+- Colonne `ticket_sent_at` sur `Guest` (migration `20260712010000_guest_ticket_sent_at`) pour savoir si/quand le billet a été envoyé
+
+### À faire de ton côté avant que ça fonctionne
+
+Pas encore configuré (comme Cloudinary) — sans ça, le bouton affichera une erreur en rouge.
+
+1. Créer un compte gratuit sur [resend.com](https://resend.com)
+2. Créer une clé API (Dashboard → API Keys)
+3. Renseigner dans `.env.local` (en local) ou `.env` (sur le VPS) :
+   ```
+   RESEND_API_KEY=re_xxxxxxxx
+   EMAIL_FROM=Josiane & Stéphane <billets@josianeetstephane.fr>
+   ```
+4. **Vérifier le domaine `josianeetstephane.fr`** dans Resend (Dashboard → Domains → ajouter les enregistrements DNS fournis) pour pouvoir envoyer depuis `EMAIL_FROM` avec ce domaine et éviter le spam.
+   - Tant que le domaine n'est pas vérifié, laisser `EMAIL_FROM` vide (ou l'omettre) : le code utilise alors `onboarding@resend.dev`, l'adresse de test fournie par Resend — fonctionne pour tester, mais moins fiable en délivrabilité et l'expéditeur n'est pas personnalisé.
+5. Redémarrer le serveur (`docker compose up -d --build app` sur le VPS)
+
+Aucune modification de code nécessaire une fois ces étapes faites.
