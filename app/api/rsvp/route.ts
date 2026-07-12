@@ -34,18 +34,26 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const rsvp = await prisma.rsvp.create({
-      data: {
-        name: name.trim(),
-        email: attending ? email.trim() : null,
-        phone: attending ? (phone?.trim() || null) : null,
-        attending:  Boolean(attending),
-        guestCount: attending ? 1 + cleanCompanions.length : 0,
-        companions: cleanCompanions,
-        message:    message?.trim() || null,
-        ...(guestId ? { guestId } : {}),
-      },
-    });
+    const rsvpData = {
+      name: name.trim(),
+      email: attending ? email.trim() : null,
+      phone: attending ? (phone?.trim() || null) : null,
+      attending:  Boolean(attending),
+      guestCount: attending ? 1 + cleanCompanions.length : 0,
+      companions: cleanCompanions,
+      message:    message?.trim() || null,
+    };
+
+    // Un invité avec token peut resoumettre pour modifier sa réponse : on
+    // met à jour son unique RSVP existant plutôt que d'en créer un second
+    // (guestId est unique en base, un 2e create() échouerait).
+    const rsvp = guestId
+      ? await prisma.rsvp.upsert({
+          where: { guestId },
+          update: rsvpData,
+          create: { ...rsvpData, guestId },
+        })
+      : await prisma.rsvp.create({ data: rsvpData });
 
     // La réponse attend la validation de l'admin avant de compter comme Confirmé/Décliné
     if (guestId) {
