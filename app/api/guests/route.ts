@@ -24,7 +24,7 @@ async function uniqueCode(taken: Set<string>) {
 export async function GET() {
   const guests = await prisma.guest.findMany({
     orderBy: { name: "asc" },
-    include: { rsvp: { select: { id: true, attending: true, guestCount: true, companions: true } } },
+    include: { rsvp: { select: { id: true, attending: true, guestCount: true, companions: true, email: true, phone: true } } },
   });
   return NextResponse.json(guests);
 }

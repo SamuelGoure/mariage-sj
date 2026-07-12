@@ -16,7 +16,7 @@ type Guest = {
   token: string;
   seatsAllowed: number;
   status: GuestStatus;
-  rsvp: { id: number; attending: boolean; guestCount: number; companions: string[] | null } | null;
+  rsvp: { id: number; attending: boolean; guestCount: number; companions: string[] | null; email: string | null; phone: string | null } | null;
   createdAt: string;
 };
 
@@ -211,11 +211,12 @@ export default function AdminGuestsPage() {
 
   // Export CSV
   function exportCsv() {
-    const header = "Nom,Code,Statut,Places allouées,Couverts confirmés,Accompagnants,Lien RSVP";
+    const header = "Nom,Code,Statut,Places allouées,Couverts confirmés,Accompagnants,Email,Téléphone,Lien RSVP";
     const rows = guests.map(g =>
       [g.name, g.token,
        STATUS_LABEL[g.status], g.seatsAllowed, g.rsvp?.guestCount ?? "",
        (g.rsvp?.companions ?? []).join(" | "),
+       g.rsvp?.email ?? "", g.rsvp?.phone ?? "",
        `${origin}/rsvp?g=${g.token}`].join(",")
     );
     const blob = new Blob([[header, ...rows].join("\n")], { type: "text/csv" });
@@ -305,6 +306,7 @@ export default function AdminGuestsPage() {
                   <th className="text-left px-4 py-4">Statut</th>
                   <th className="text-left px-4 py-4 hidden sm:table-cell">Places allouées</th>
                   <th className="text-left px-4 py-4 hidden md:table-cell">Accompagnants confirmés</th>
+                  <th className="text-left px-4 py-4 hidden lg:table-cell">Contact (billets)</th>
                   <th className="text-right px-5 py-4">Actions</th>
                 </tr>
               </thead>
@@ -345,6 +347,14 @@ export default function AdminGuestsPage() {
                             ? `${g.name} + ${g.rsvp.companions.join(", ")}`
                             : g.name)
                         : "—"}
+                    </td>
+                    <td className="px-4 py-4 text-white/60 text-xs hidden lg:table-cell max-w-[200px]">
+                      {g.rsvp?.email ? (
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-white/80 truncate">{g.rsvp.email}</span>
+                          {g.rsvp.phone && <span>{g.rsvp.phone}</span>}
+                        </div>
+                      ) : "—"}
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex items-center justify-end gap-2">

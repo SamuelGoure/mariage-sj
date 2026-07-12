@@ -7,7 +7,7 @@ import ParallaxImage from "@/components/ui/ParallaxImage";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import {
   Heart, Send, Users, Sparkles, Plus, X,
-  MapPin, Clock, CalendarDays, Train, ChevronRight,
+  Clock, ChevronRight,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { FloralDivider, RingsIcon, FloralCorner } from "@/components/ui/decorations";
 import { formatLongDateFr, formatDeadlineFr } from "@/lib/utils";
-import type { GeneralContent, VenuesContent } from "@/lib/content/sections";
+import type { GeneralContent } from "@/lib/content/sections";
 
 type Step = "code" | "form" | "success" | "decline";
 
@@ -41,8 +41,8 @@ function FadeIn({ children, className, delay = 0, direction = "up" }: {
 }
 
 export default function RsvpContent({
-  general, venues,
-}: { general: GeneralContent; venues: VenuesContent }) {
+  general,
+}: { general: GeneralContent }) {
   const searchParams = useSearchParams();
   const urlToken = searchParams.get("g") ?? "";
 
@@ -65,7 +65,7 @@ export default function RsvpContent({
   const [codeHoneypot, setCodeHoneypot] = useState(""); // anti-spam : ce champ doit rester vide (invisible pour un humain)
 
   const [form, setForm] = useState({
-    name: "", companions: [] as string[], message: "",
+    name: "", email: "", phone: "", companions: [] as string[], message: "",
   });
 
   function applyGuest(data: { name: string; seatsAllowed?: number }) {
@@ -135,13 +135,17 @@ export default function RsvpContent({
       setError("Merci de renseigner votre nom complet.");
       return;
     }
+    if (attending && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+      setError("Merci de renseigner une adresse email valide.");
+      return;
+    }
     setLoading(true);
     try {
       const res = await fetch("/api/rsvp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: form.name, attending,
+          name: form.name, email: form.email, phone: form.phone, attending,
           companions: form.companions, message: form.message,
           guestToken: guestToken || undefined,
         }),
@@ -326,6 +330,26 @@ export default function RsvpContent({
                           onChange={(e) => set("name", e.target.value)}
                           className="border-rose-200 focus-visible:ring-[#e91e8c] rounded-xl h-11" required />
                       </div>
+
+                      {attending && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                          <div className="flex flex-col gap-2">
+                            <Label htmlFor="email" className="text-sm text-[#1A2B5F] font-medium">Email *</Label>
+                            <Input id="email" type="email" placeholder="vous@exemple.com" value={form.email}
+                              onChange={(e) => set("email", e.target.value)}
+                              className="border-rose-200 focus-visible:ring-[#e91e8c] rounded-xl h-11" required />
+                          </div>
+                          <div className="flex flex-col gap-2">
+                            <Label htmlFor="phone" className="text-sm text-[#1A2B5F] font-medium">
+                              Téléphone
+                              <span className="text-muted-foreground font-normal ml-1">(optionnel)</span>
+                            </Label>
+                            <Input id="phone" type="tel" placeholder="06 12 34 56 78" value={form.phone}
+                              onChange={(e) => set("phone", e.target.value)}
+                              className="border-rose-200 focus-visible:ring-[#e91e8c] rounded-xl h-11" />
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Accompagnants */}
@@ -427,25 +451,9 @@ export default function RsvpContent({
                     <FloralDivider className="w-44 h-5" />
                     <p className="text-muted-foreground leading-relaxed max-w-sm">
                       Votre présence nous touche profondément.
-                      Nous avons hâte de célébrer avec vous le <strong className="text-[#1A2B5F]">{weddingDateText}</strong> !
+                      Vous serez recontacté(e) dès que vos billets d&apos;accès seront prêts à télécharger.
                     </p>
                   </div>
-                </div>
-
-                {/* Infos pratiques post-confirmation */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
-                  {[
-                    { icon: CalendarDays, label: "Rendez-vous le", value: weddingDateText, sub: venues.ceremony.timeText, color: "#e91e8c" },
-                    { icon: MapPin,       label: "Adresse",        value: venues.ceremony.name, sub: venues.ceremony.address, color: "#4A90D9" },
-                    { icon: Train,        label: "RER B",          value: "Orsay-Ville",   sub: "10 min à pied",         color: "#1A2B5F" },
-                  ].map(({ icon: Icon, label, value, sub, color }) => (
-                    <div key={label} className="bg-white rounded-2xl p-4 border border-rose-50 text-center">
-                      <Icon className="w-5 h-5 mx-auto mb-2" style={{ color }} />
-                      <p className="text-xs text-muted-foreground mb-0.5">{label}</p>
-                      <p className="font-heading text-lg text-[#1A2B5F] leading-tight">{value}</p>
-                      <p className="text-xs text-muted-foreground">{sub}</p>
-                    </div>
-                  ))}
                 </div>
 
                 {/* Bouton "Liste de cadeaux" retiré tant que /gifts est désactivée */}

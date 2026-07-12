@@ -12,6 +12,8 @@ interface RsvpItem {
   attending: boolean;
   guestCount: number;
   companions: string[] | null;
+  email: string | null;
+  phone: string | null;
   message: string | null;
   createdAt: string;
   guest: { id: number; name: string; group: string | null; token: string; status: GuestStatus } | null;
@@ -69,7 +71,7 @@ export default function AdminRsvpPage() {
     );
 
   function exportCsv() {
-    const headers = ["ID", "Code", "Nom", "Présent", "Nb personnes", "Accompagnants", "Message", "Date"];
+    const headers = ["ID", "Code", "Nom", "Présent", "Nb personnes", "Accompagnants", "Email", "Téléphone", "Message", "Date"];
     const rows = rsvps.map((r) => [
       r.id,
       r.guest?.token ?? "",
@@ -77,6 +79,8 @@ export default function AdminRsvpPage() {
       r.attending ? "Oui" : "Non",
       r.guestCount,
       (r.companions ?? []).join(" | "),
+      r.email ?? "",
+      r.phone ?? "",
       r.message ?? "",
       new Date(r.createdAt).toLocaleDateString("fr-FR"),
     ]);
@@ -167,7 +171,7 @@ export default function AdminRsvpPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-white/10 text-blue-300 text-left">
-                    {["Code", "Invité", "Présence", "Personnes", "Accompagnants", "Statut", "Date"].map((h) => (
+                    {["Code", "Invité", "Présence", "Personnes", "Accompagnants", "Contact", "Statut", "Date"].map((h) => (
                       <th key={h} className="px-6 py-4 font-medium whitespace-nowrap">{h}</th>
                     ))}
                   </tr>
@@ -199,6 +203,14 @@ export default function AdminRsvpPage() {
                       </td>
                       <td className="px-6 py-4 text-blue-200 text-xs max-w-xs">
                         {(r.companions ?? []).join(", ") || "—"}
+                      </td>
+                      <td className="px-6 py-4 text-blue-200 text-xs max-w-[200px]">
+                        {r.email ? (
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-white truncate">{r.email}</span>
+                            {r.phone && <span>{r.phone}</span>}
+                          </div>
+                        ) : "—"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {r.guest && (

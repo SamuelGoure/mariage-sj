@@ -4,10 +4,14 @@ import { prisma } from "@/lib/prisma";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, attending, companions, message, guestToken } = body;
+    const { name, email, phone, attending, companions, message, guestToken } = body;
 
     if (!name?.trim() || attending === undefined) {
       return NextResponse.json({ error: "Champs requis manquants." }, { status: 400 });
+    }
+
+    if (attending && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email?.trim() ?? "")) {
+      return NextResponse.json({ error: "Merci de renseigner une adresse email valide." }, { status: 400 });
     }
 
     // Résoudre le guest via le token si fourni
@@ -33,6 +37,8 @@ export async function POST(req: NextRequest) {
     const rsvp = await prisma.rsvp.create({
       data: {
         name: name.trim(),
+        email: attending ? email.trim() : null,
+        phone: attending ? (phone?.trim() || null) : null,
         attending:  Boolean(attending),
         guestCount: attending ? 1 + cleanCompanions.length : 0,
         companions: cleanCompanions,
