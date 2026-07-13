@@ -68,10 +68,30 @@ export default function RsvpContent({
     name: "", email: "", phone: "", companions: [] as string[], message: "",
   });
 
-  function applyGuest(data: { name: string; seatsAllowed?: number }) {
-    setGuestName(data.name);
-    setForm(f => ({ ...f, name: data.name }));
+  function applyGuest(data: {
+    name: string;
+    seatsAllowed?: number;
+    rsvp?: {
+      name: string; attending: boolean; email: string | null; phone: string | null;
+      companions: unknown; message: string | null;
+    } | null;
+  }) {
     if (data.seatsAllowed) setSeatsAllowed(data.seatsAllowed);
+    if (data.rsvp) {
+      const name = data.rsvp.name || data.name;
+      setGuestName(name);
+      setForm({
+        name,
+        email: data.rsvp.email ?? "",
+        phone: data.rsvp.phone ?? "",
+        companions: Array.isArray(data.rsvp.companions) ? (data.rsvp.companions as string[]) : [],
+        message: data.rsvp.message ?? "",
+      });
+      setAttending(data.rsvp.attending);
+    } else {
+      setGuestName(data.name);
+      setForm(f => ({ ...f, name: data.name }));
+    }
   }
 
   // Pré-remplir depuis le token présent dans le lien

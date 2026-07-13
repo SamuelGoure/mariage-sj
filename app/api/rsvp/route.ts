@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
     if (guestId) {
       await prisma.guest.update({
         where: { id: guestId },
-        data: { status: "AWAITING_VALIDATION" },
+        data: { name: name.trim(), status: "AWAITING_VALIDATION" },
       });
     }
 
