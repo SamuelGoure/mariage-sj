@@ -71,14 +71,20 @@ Le site est en ligne : **https://josianeetstephane.fr** (VPS Ubuntu 24.04, IP `5
 - **Reverse proxy / HTTPS** : Caddy (`/etc/caddy/Caddyfile`), certificat Let's Encrypt automatique et renouvelé tout seul. Service `caddy` activé au démarrage.
 - **Pare-feu** : `ufw` actif, seuls les ports 22 (SSH), 80 et 443 sont ouverts.
 - **App** : code dans `~/mariage-sj` sur le serveur, lancé via `docker compose up -d` (services `app` + `db`, `restart: unless-stopped` → redémarre automatiquement si le serveur reboote).
-- **Base de données** : les 168 invités importés sont en place. Le `.env` de prod (mots de passe DB générés aléatoirement, `NEXTAUTH_SECRET` dédié) vit uniquement sur le serveur dans `~/mariage-sj/.env` (permissions 600) — jamais commité, jamais transmis par chat.
+- **Base de données** : 93 invités importés sont en place (écart constaté le 2026-07-13 avec les 168 mentionnés précédemment ici — à vérifier auprès de Samuel). Le `.env` de prod (mots de passe DB générés aléatoirement, `NEXTAUTH_SECRET` dédié) vit uniquement sur le serveur dans `~/mariage-sj/.env` (permissions 600) — jamais commité, jamais transmis par chat.
 - **Compte admin** créé (`nataltek@gmail.com`), mot de passe généré aléatoirement et communiqué une seule fois à Samuel.
 
 ### Reste à faire
 
-- **Cloudinary** : clés pas encore renseignées → l'upload d'images depuis le dashboard admin ne fonctionnera pas tant qu'elles ne sont pas ajoutées dans le `.env` du serveur (voir section suivante).
-- **Resend** : clé pas encore renseignée → le bouton "Envoyer le billet" dans `/admin/guests` échouera tant qu'elle n'est pas ajoutée dans le `.env` du serveur (voir section "Envoi des billets par email").
+- **Cloudinary** : clés pas encore renseignées → l'upload d'images depuis le dashboard admin ne fonctionnera pas tant qu'elles ne sont pas ajoutées dans le `.env` du serveur.
+- **Resend** : clé API renseignée (2026-07-13). En attente de la vérification du domaine `josianeetstephane.fr` (DNS ajoutés par le frère de Samuel côté OVH, statut Resend `pending` au 2026-07-13 — propagation en cours). Tant que non vérifié, `EMAIL_FROM` reste sur `onboarding@resend.dev`, qui n'autorise l'envoi que vers l'adresse du compte Resend (`goure2@gmail.com`), pas vers les invités. Une fois `verified`, basculer `EMAIL_FROM` sur `Josiane & Stéphane <billets@josianeetstephane.fr>` et redémarrer l'app.
 - Si le mot de passe VPS d'origine (transmis par le frère) est réutilisé ailleurs, le faire changer côté panel d'hébergement — il n'est plus exploitable en SSH mais reste valable pour une éventuelle console web du fournisseur.
+
+### Faille de sécurité corrigée (2026-07-13)
+
+`/api/guests`, `GET /api/rsvp` et la modération `/api/gallery/[id]` (PATCH/DELETE) étaient accessibles **sans authentification** en prod : le middleware (`proxy.ts`) ne protège que `/admin/*` et `/api/admin/*`, pas ces routes. N'importe qui connaissant l'URL pouvait lire la liste complète des invités (noms, emails, téléphones, tokens RSVP) et modifier/supprimer des invités ou réponses RSVP arbitrairement.
+
+Corrigé via `lib/auth-guard.ts` (`requireAdmin()`, vérifie le JWT NextAuth) ajouté sur ces handlers. Restent volontairement publics : `POST /api/rsvp` (soumission invité), `GET /api/guests/by-token/[token]` (lookup par token personnel), `GET`/`POST /api/gallery` (consultation/upload invité). Voir commit `703daa1`.
 
 ## Invités & liens RSVP personnalisés
 
@@ -145,19 +151,18 @@ Dans `/admin/guests`, chaque invité au statut **Confirmé** avec un email rense
 - `app/api/guests/[id]/send-ticket/route.ts` — génère le QR code (`qrcode`, déjà utilisé pour le QR admin existant) et envoie l'email ; vérifie que l'invité est confirmé et a un email avant d'envoyer
 - Colonne `ticket_sent_at` sur `Guest` (migration `20260712010000_guest_ticket_sent_at`) pour savoir si/quand le billet a été envoyé
 
-### À faire de ton côté avant que ça fonctionne
+### État actuel (2026-07-13)
 
-Pas encore configuré (comme Cloudinary) — sans ça, le bouton affichera une erreur en rouge.
+- `RESEND_API_KEY` renseignée en local et sur le VPS.
+- Domaine `josianeetstephane.fr` ajouté dans Resend (Dashboard → Domains), enregistrements DNS transmis au frère de Samuel pour ajout côté OVH. Statut Resend : `pending` (propagation DNS en cours).
+- Tant que le domaine n'est pas `verified`, `EMAIL_FROM` reste sur `onboarding@resend.dev` (adresse de test Resend) : l'envoi fonctionne uniquement vers l'adresse du compte Resend (`goure2@gmail.com`), pas vers les invités.
 
-1. Créer un compte gratuit sur [resend.com](https://resend.com)
-2. Créer une clé API (Dashboard → API Keys)
-3. Renseigner dans `.env.local` (en local) ou `.env` (sur le VPS) :
+### Une fois le domaine `verified` dans Resend
+
+1. Mettre à jour `EMAIL_FROM` dans `.env` (VPS) :
    ```
-   RESEND_API_KEY=re_xxxxxxxx
    EMAIL_FROM=Josiane & Stéphane <billets@josianeetstephane.fr>
    ```
-4. **Vérifier le domaine `josianeetstephane.fr`** dans Resend (Dashboard → Domains → ajouter les enregistrements DNS fournis) pour pouvoir envoyer depuis `EMAIL_FROM` avec ce domaine et éviter le spam.
-   - Tant que le domaine n'est pas vérifié, laisser `EMAIL_FROM` vide (ou l'omettre) : le code utilise alors `onboarding@resend.dev`, l'adresse de test fournie par Resend — fonctionne pour tester, mais moins fiable en délivrabilité et l'expéditeur n'est pas personnalisé.
-5. Redémarrer le serveur (`docker compose up -d --build app` sur le VPS)
+2. Redémarrer l'app (`docker compose up -d --build app` sur le VPS)
 
-Aucune modification de code nécessaire une fois ces étapes faites.
+Aucune modification de code nécessaire.
