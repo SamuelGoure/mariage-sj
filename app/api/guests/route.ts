@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/auth-guard";
 
 const CODE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
@@ -21,7 +22,10 @@ async function uniqueCode(taken: Set<string>) {
 }
 
 // GET /api/guests — liste complète avec stats
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const unauthorized = await requireAdmin(req);
+  if (unauthorized) return unauthorized;
+
   const guests = await prisma.guest.findMany({
     orderBy: { name: "asc" },
     include: { rsvp: { select: { id: true, attending: true, guestCount: true, companions: true, email: true, phone: true } } },
@@ -31,6 +35,9 @@ export async function GET() {
 
 // POST /api/guests — créer un invité (ou import batch)
 export async function POST(req: NextRequest) {
+  const unauthorized = await requireAdmin(req);
+  if (unauthorized) return unauthorized;
+
   const body = await req.json();
   const taken = new Set<string>();
 

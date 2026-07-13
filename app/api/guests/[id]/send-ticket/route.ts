@@ -4,9 +4,13 @@ import { prisma } from "@/lib/prisma";
 import { sendTicketEmail } from "@/lib/email";
 import { getGeneral, getVenues } from "@/lib/content";
 import { formatLongDateFr } from "@/lib/utils";
+import { requireAdmin } from "@/lib/auth-guard";
 
 // POST /api/guests/[id]/send-ticket — envoie le billet (QR code) par email
-export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const unauthorized = await requireAdmin(req);
+  if (unauthorized) return unauthorized;
+
   const { id } = await params;
 
   const guest = await prisma.guest.findUnique({
