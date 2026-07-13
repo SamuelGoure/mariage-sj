@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
 
   const guests = await prisma.guest.findMany({
     orderBy: { name: "asc" },
-    include: { rsvp: { select: { id: true, attending: true, guestCount: true, companions: true, email: true, phone: true } } },
+    include: { rsvp: { select: { id: true, attending: true, guestCount: true, companions: true, email: true, phone: true, message: true, createdAt: true } } },
   });
   return NextResponse.json(guests);
 }

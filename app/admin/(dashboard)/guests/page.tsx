@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import {
   Users, UserCheck, UserX, Clock, ShieldQuestion, Search, Plus, Upload,
-  Copy, Trash2, Pencil, QrCode, Download, ChevronDown, X, Check, Send,
+  Copy, Trash2, Pencil, QrCode, Download, ChevronDown, X, Check, Send, Eye,
 } from "lucide-react";
 import QRCode from "qrcode";
 
@@ -13,11 +13,15 @@ type Guest = {
   id: number;
   name: string;
   address: string | null;
+  group: string | null;
   token: string;
   seatsAllowed: number;
   status: GuestStatus;
   ticketSentAt: string | null;
-  rsvp: { id: number; attending: boolean; guestCount: number; companions: string[] | null; email: string | null; phone: string | null } | null;
+  rsvp: {
+    id: number; attending: boolean; guestCount: number; companions: string[] | null;
+    email: string | null; phone: string | null; message: string | null; createdAt: string;
+  } | null;
   createdAt: string;
 };
 
@@ -62,6 +66,7 @@ export default function AdminGuestsPage() {
   const [editError, setEditError] = useState("");
   const [copied, setCopied] = useState<number | null>(null);
   const [qrGuest, setQrGuest] = useState<Guest | null>(null);
+  const [viewGuest, setViewGuest] = useState<Guest | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
   const [sendingTicket, setSendingTicket] = useState<number | null>(null);
@@ -376,6 +381,10 @@ export default function AdminGuestsPage() {
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex items-center justify-end gap-2">
+                        <button onClick={() => setViewGuest(g)} title="Voir toutes les informations"
+                          className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/10 hover:bg-white/20 text-white/60 hover:text-white transition-colors">
+                          <Eye className="w-3.5 h-3.5" />
+                        </button>
                         {g.status === "CONFIRMED" && g.rsvp?.email && (
                           <button
                             onClick={() => sendTicket(g)}
@@ -421,6 +430,103 @@ export default function AdminGuestsPage() {
           )}
         </div>
         <p className="text-white/30 text-xs mt-3 text-right">{filtered.length} / {total} invités</p>
+
+        {/* ── Modal détail invité ── */}
+        {viewGuest && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-[#1e3370] rounded-3xl p-8 w-full max-w-lg border border-white/10 shadow-2xl max-h-[85vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-white">{viewGuest.name}</h3>
+                <button onClick={() => setViewGuest(null)} className="text-white/50 hover:text-white">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-4 text-sm">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-white/40 text-xs uppercase tracking-wider mb-1">Code</p>
+                    <p className="text-white font-mono">{viewGuest.token}</p>
+                  </div>
+                  <div>
+                    <p className="text-white/40 text-xs uppercase tracking-wider mb-1">Statut</p>
+                    <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${STATUS_COLOR[viewGuest.status]}`}>
+                      {STATUS_LABEL[viewGuest.status]}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-white/40 text-xs uppercase tracking-wider mb-1">Places allouées</p>
+                    <p className="text-white">{viewGuest.seatsAllowed}</p>
+                  </div>
+                  <div>
+                    <p className="text-white/40 text-xs uppercase tracking-wider mb-1">Groupe</p>
+                    <p className="text-white">{viewGuest.group || "—"}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-white/40 text-xs uppercase tracking-wider mb-1">Adresse</p>
+                    <p className="text-white">{viewGuest.address || "—"}</p>
+                  </div>
+                </div>
+
+                <div className="h-px bg-white/10" />
+
+                {viewGuest.rsvp ? (
+                  <>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-white/40 text-xs uppercase tracking-wider mb-1">Présence</p>
+                        <p className="text-white">{viewGuest.rsvp.attending ? "Présent(e)" : "Absent(e)"}</p>
+                      </div>
+                      <div>
+                        <p className="text-white/40 text-xs uppercase tracking-wider mb-1">Couverts</p>
+                        <p className="text-white">{viewGuest.rsvp.guestCount}</p>
+                      </div>
+                      <div>
+                        <p className="text-white/40 text-xs uppercase tracking-wider mb-1">Email</p>
+                        <p className="text-white break-all">{viewGuest.rsvp.email || "—"}</p>
+                      </div>
+                      <div>
+                        <p className="text-white/40 text-xs uppercase tracking-wider mb-1">Téléphone</p>
+                        <p className="text-white">{viewGuest.rsvp.phone || "—"}</p>
+                      </div>
+                      <div className="col-span-2">
+                        <p className="text-white/40 text-xs uppercase tracking-wider mb-1">Accompagnants</p>
+                        <p className="text-white">
+                          {viewGuest.rsvp.companions?.length ? viewGuest.rsvp.companions.join(", ") : "—"}
+                        </p>
+                      </div>
+                      <div className="col-span-2">
+                        <p className="text-white/40 text-xs uppercase tracking-wider mb-1">Répondu le</p>
+                        <p className="text-white">{new Date(viewGuest.rsvp.createdAt).toLocaleString("fr-FR")}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-white/40 text-xs uppercase tracking-wider mb-1.5">Mot pour les mariés</p>
+                      <p className="text-white bg-white/5 rounded-xl px-4 py-3 whitespace-pre-wrap">
+                        {viewGuest.rsvp.message || "—"}
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-white/40 italic">Aucune réponse RSVP pour le moment.</p>
+                )}
+
+                {viewGuest.ticketSentAt && (
+                  <p className="text-white/40 text-xs">
+                    Billet envoyé le {new Date(viewGuest.ticketSentAt).toLocaleDateString("fr-FR")}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button onClick={() => setViewGuest(null)}
+                  className="flex-1 py-2.5 rounded-xl bg-white/10 text-white text-sm hover:bg-white/20 transition-colors">
+                  Fermer
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ── Modal ajout ── */}
         {showAddModal && (
