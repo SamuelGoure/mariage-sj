@@ -249,9 +249,7 @@ export default function EventContent({
                 img: "/dress_code.jpeg",
                 content: (
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    <strong className="text-[#1A2B5F]">Tenue de soirée</strong> recommandée.<br /><br />
-                    Blanc et ivoire réservés aux mariés.<br /><br />
-                    Suggestions&nbsp;: <span className="text-[#1A2B5F] font-medium">bleu nuit · rose · bordeaux · champagne · doré</span>
+                    La tenue de soirée est recommandée. Les couleurs blanc et ivoire sont réservées aux mariés. Privilégiez des teintes élégantes.
                   </p>
                 ),
               },
