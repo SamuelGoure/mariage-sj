@@ -77,7 +77,7 @@ Le site est en ligne : **https://josianeetstephane.fr** (VPS Ubuntu 24.04, IP `5
 ### Reste à faire
 
 - **Cloudinary** : clés pas encore renseignées → l'upload d'images depuis le dashboard admin ne fonctionnera pas tant qu'elles ne sont pas ajoutées dans le `.env` du serveur.
-- **Resend** : clé API renseignée (2026-07-13). En attente de la vérification du domaine `josianeetstephane.fr` (DNS ajoutés par le frère de Samuel côté OVH, statut Resend `pending` au 2026-07-13 — propagation en cours). Tant que non vérifié, `EMAIL_FROM` reste sur `onboarding@resend.dev`, qui n'autorise l'envoi que vers l'adresse du compte Resend (`goure2@gmail.com`), pas vers les invités. Une fois `verified`, basculer `EMAIL_FROM` sur `Josiane & Stéphane <billets@josianeetstephane.fr>` et redémarrer l'app.
+- **Brevo** : clé API renseignée (2026-07-15). L'expéditeur (`EMAIL_FROM`) doit être vérifié côté Brevo (Dashboard → Senders, ou Domains pour une authentification de domaine complète) avant de pouvoir envoyer vers les invités.
 - Si le mot de passe VPS d'origine (transmis par le frère) est réutilisé ailleurs, le faire changer côté panel d'hébergement — il n'est plus exploitable en SSH mais reste valable pour une éventuelle console web du fournisseur.
 
 ### Faille de sécurité corrigée (2026-07-13)
@@ -141,28 +141,17 @@ Pas encore configuré. Pour tester l'upload de photos depuis le dashboard (ongle
 
 `next.config.ts` autorise déjà le domaine `res.cloudinary.com` pour `next/image`.
 
-## Envoi des billets par email (Resend)
+## Envoi des billets par email (Brevo)
 
-Dans `/admin/guests`, chaque invité au statut **Confirmé** avec un email renseigné a un bouton "Envoyer le billet" (icône avion en papier). Il génère le QR code d'accès et l'envoie par email (pièce jointe + aperçu dans le corps du mail). Une fois envoyé, le bouton passe au vert avec la date d'envoi (survol pour voir), et redevient cliquable pour renvoyer si besoin.
+Dans `/admin/guests`, chaque invité au statut **Confirmé** avec un email renseigné a un bouton "Envoyer le billet" (icône avion en papier). Il génère le QR code d'accès et l'envoie par email (QR intégré dans le corps du mail en `data:` URI). Une fois envoyé, le bouton passe au vert avec la date d'envoi (survol pour voir), et redevient cliquable pour renvoyer si besoin.
 
 ### Fichiers ajoutés
 
-- `lib/email.ts` — client Resend + template HTML du billet
+- `lib/email.ts` — appel direct à l'API REST Brevo (`https://api.brevo.com/v3/smtp/email`, via `fetch`, pas de SDK) + template HTML du billet
 - `app/api/guests/[id]/send-ticket/route.ts` — génère le QR code (`qrcode`, déjà utilisé pour le QR admin existant) et envoie l'email ; vérifie que l'invité est confirmé et a un email avant d'envoyer
 - Colonne `ticket_sent_at` sur `Guest` (migration `20260712010000_guest_ticket_sent_at`) pour savoir si/quand le billet a été envoyé
 
-### État actuel (2026-07-13)
+### État actuel (2026-07-15)
 
-- `RESEND_API_KEY` renseignée en local et sur le VPS.
-- Domaine `josianeetstephane.fr` ajouté dans Resend (Dashboard → Domains), enregistrements DNS transmis au frère de Samuel pour ajout côté OVH. Statut Resend : `pending` (propagation DNS en cours).
-- Tant que le domaine n'est pas `verified`, `EMAIL_FROM` reste sur `onboarding@resend.dev` (adresse de test Resend) : l'envoi fonctionne uniquement vers l'adresse du compte Resend (`goure2@gmail.com`), pas vers les invités.
-
-### Une fois le domaine `verified` dans Resend
-
-1. Mettre à jour `EMAIL_FROM` dans `.env` (VPS) :
-   ```
-   EMAIL_FROM=Josiane & Stéphane <billets@josianeetstephane.fr>
-   ```
-2. Redémarrer l'app (`docker compose up -d --build app` sur le VPS)
-
-Aucune modification de code nécessaire.
+- `BREVO_API_KEY` et `EMAIL_FROM` renseignées sur le VPS (migration depuis Resend).
+- `EMAIL_FROM` doit être une adresse vérifiée côté Brevo (Dashboard → Senders) — sinon l'envoi échoue avec une erreur 4xx renvoyée par l'API.

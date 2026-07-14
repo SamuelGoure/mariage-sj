@@ -1,17 +1,8 @@
-import { Resend } from "resend";
-
-function getResend() {
-  if (!process.env.RESEND_API_KEY) {
-    throw new Error("Configuration email manquante : RESEND_API_KEY n'est pas définie.");
-  }
-  return new Resend(process.env.RESEND_API_KEY);
-}
-
 function ticketEmailHtml({
-  guestName, companions, coupleNames, weddingDateText, venueName,
+  guestName, companions, coupleNames, weddingDateText, venueName, qrDataUri,
 }: {
   guestName: string; companions: string[]; coupleNames: string;
-  weddingDateText: string; venueName: string;
+  weddingDateText: string; venueName: string; qrDataUri: string;
 }) {
   const companionsLine = companions.length
     ? `<p style="margin:0 0 4px;color:#4b5563;font-size:14px;">Accompagné(e) de : ${companions.join(", ")}</p>`
@@ -30,12 +21,12 @@ function ticketEmailHtml({
         ${companionsLine}
 
         <div style="margin:24px 0;padding:16px;background:#FDF8F5;border-radius:16px;">
-          <img src="cid:qr-billet" alt="QR code d'accès" width="220" height="220" style="display:block;margin:0 auto;" />
+          <img src="${qrDataUri}" alt="QR code d'accès" width="220" height="220" style="display:block;margin:0 auto;" />
         </div>
 
         <p style="margin:0;color:#4b5563;font-size:13px;line-height:1.6;">
-          Présentez ce billet (le QR code en pièce jointe) à l'entrée le jour J.
-          Il vous a été envoyé en pièce jointe au format image, pensez à le garder accessible sur votre téléphone.
+          Présentez ce billet (le QR code ci-dessus) à l'entrée le jour J.
+          Pensez à le garder accessible sur votre téléphone.
         </p>
       </div>
     </div>
@@ -53,19 +44,36 @@ export async function sendTicketEmail({
   weddingDateText: string;
   venueName: string;
 }) {
-  const from = process.env.EMAIL_FROM || "onboarding@resend.dev";
+  const apiKey = process.env.BREVO_API_KEY;
+  if (!apiKey) {
+    throw new Error("Configuration email manquante : BREVO_API_KEY n'est pas définie.");
+  }
+  const from = process.env.EMAIL_FROM;
+  if (!from) {
+    throw new Error("Configuration email manquante : EMAIL_FROM n'est pas définie.");
+  }
 
-  return getResend().emails.send({
-    from,
-    to,
-    subject: `Votre billet d'accès — Mariage ${coupleNames}`,
-    html: ticketEmailHtml({ guestName, companions, coupleNames, weddingDateText, venueName }),
-    attachments: [
-      {
-        filename: "billet-acces.png",
-        content: qrPngBuffer.toString("base64"),
-        contentId: "qr-billet",
-      },
-    ],
+  const qrDataUri = `data:image/png;base64,${qrPngBuffer.toString("base64")}`;
+
+  const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      "api-key": apiKey,
+      "content-type": "application/json",
+      accept: "application/json",
+    },
+    body: JSON.stringify({
+      sender: { email: from, name: coupleNames },
+      to: [{ email: to, name: guestName }],
+      subject: `Votre billet d'accès — Mariage ${coupleNames}`,
+      htmlContent: ticketEmailHtml({ guestName, companions, coupleNames, weddingDateText, venueName, qrDataUri }),
+    }),
   });
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Échec de l'envoi via Brevo (${res.status}) : ${body}`);
+  }
+
+  return res.json();
 }
