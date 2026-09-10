@@ -25,6 +25,16 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Bloque le scroll de la page derrière le menu plein écran : sur mobile Safari,
+  // le rebond élastique du scroll de fond peut faire disparaître/mal peindre les
+  // éléments position:fixed superposés (bug connu iOS).
+  useEffect(() => {
+    if (!open) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prevOverflow; };
+  }, [open]);
+
   const navBg = isHome
     ? scrolled
       ? "bg-white/95 backdrop-blur-md shadow-sm border-b border-rose-100"
@@ -105,11 +115,11 @@ export default function Navbar() {
       <AnimatePresence>
         {open && (
           <motion.div
-            className="fixed inset-0 z-40 bg-white flex flex-col items-center justify-center gap-8"
-            initial={{ opacity: 0, scale: 0.97 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.97 }}
-            transition={{ duration: 0.25 }}
+            className="fixed inset-0 z-40 bg-white flex flex-col items-center justify-center gap-8 overflow-y-auto py-20"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
           >
             {links.map(({ href, label }, i) => (
               <motion.div
