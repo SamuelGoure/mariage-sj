@@ -3,7 +3,7 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import Image from "next/image";
-import { MapPin, Clock, Car, Shirt, Heart, Music, UtensilsCrossed, Baby, Navigation, Phone, Sparkles } from "lucide-react";
+import { MapPin, Clock, Car, Shirt, Heart, UtensilsCrossed, Baby, Navigation, Phone } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { RingsIcon, FloralDivider, FloralCorner, WaveDivider } from "@/components/ui/decorations";
 import ParallaxImage from "@/components/ui/ParallaxImage";
@@ -30,14 +30,6 @@ function FadeIn({ children, className, delay = 0, direction = "up" }: {
     </motion.div>
   );
 }
-
-const timeline = [
-  { time: "14h30", label: "Accueil des invités", desc: "Retrouvez-vous et prenez vos places avant la cérémonie.", icon: Sparkles, color: "#F4A7B9" },
-  { time: "15h00", label: "Cérémonie", desc: "Échange des vœux et des alliances dans la salle principale.", icon: Heart, color: "#e91e8c" },
-  { time: "17h30", label: "Cocktail", desc: "Champagne, musique live et petits fours en terrasse.", icon: Music, color: "#4A90D9" },
-  { time: "20h00", label: "Dîner de réception", desc: "Un repas gastronomique pour célébrer ensemble.", icon: UtensilsCrossed, color: "#e91e8c" },
-  { time: "23h00", label: "Soirée dansante", desc: "Que la fête commence ! La piste de danse vous attend.", icon: Music, color: "#4A90D9" },
-];
 
 export default function EventContent({
   general, venues, faq,
@@ -70,59 +62,6 @@ export default function EventContent({
             className="flex justify-center mt-4">
             <FloralDivider className="w-56 h-6 opacity-80" />
           </motion.div>
-        </div>
-      </section>
-
-      {/* ── TIMELINE ── (masquée pour l'instant, détail du déroulé pas encore public — supprimer ce commentaire pour la réafficher)
-      <section className="py-24 px-6 bg-white relative overflow-hidden">
-        <FloralCorner className="absolute bottom-4 left-4 w-32 h-32 opacity-20" />
-        <FloralCorner className="absolute bottom-4 right-4 w-32 h-32 opacity-20" flip />
-        <div className="max-w-2xl mx-auto">
-          <FadeIn className="flex flex-col items-center gap-3 mb-16">
-            <p className="text-sm uppercase tracking-[0.4em] text-[#e91e8c]">Programme</p>
-            <h2 className="font-heading text-5xl text-[#1A2B5F] text-center">La journée</h2>
-            <FloralDivider className="w-48 h-6 mt-1" />
-          </FadeIn>
-
-          <div className="relative">
-            <div className="absolute left-5 top-5 bottom-5 w-px bg-gradient-to-b from-[#F4A7B9] via-[#e91e8c] to-[#4A90D9]" />
-
-            <div className="flex flex-col gap-6">
-              {timeline.map(({ time, label, desc, icon: Icon, color }, i) => (
-                <FadeIn key={time} delay={i * 0.12} direction="left">
-                  <div className="flex items-start gap-5">
-                    <div className="relative z-10 shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-lg ring-4 ring-white"
-                      style={{ backgroundColor: color }}>
-                      <Icon className="w-4 h-4 text-white" />
-                    </div>
-                    <div className="flex-1 bg-white rounded-2xl p-5 border border-rose-100 shadow-sm hover:shadow-md transition-shadow cursor-default">
-                      <p className="font-heading text-3xl font-light leading-none mb-1" style={{ color }}>{time}</p>
-                      <h3 className="font-heading text-xl text-[#1A2B5F] mb-1.5">{label}</h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
-                    </div>
-                  </div>
-                </FadeIn>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-      */}
-
-      {/* ── TIMELINE (placeholder le temps que le déroulé soit finalisé) ── */}
-      <section className="py-24 px-6 bg-white relative overflow-hidden">
-        <FloralCorner className="absolute bottom-4 left-4 w-32 h-32 opacity-20" />
-        <FloralCorner className="absolute bottom-4 right-4 w-32 h-32 opacity-20" flip />
-        <div className="max-w-2xl mx-auto">
-          <FadeIn className="flex flex-col items-center gap-4 text-center">
-            <p className="text-sm uppercase tracking-[0.4em] text-[#e91e8c]">Programme</p>
-            <h2 className="font-heading text-5xl text-[#1A2B5F]">La journée</h2>
-            <FloralDivider className="w-48 h-6 mt-1" />
-            <p className="font-heading text-2xl italic text-muted-foreground mt-4">Bientôt disponible</p>
-            <p className="text-sm text-muted-foreground max-w-sm">
-              Le déroulé détaillé de la journée sera communiqué prochainement.
-            </p>
-          </FadeIn>
         </div>
       </section>
 
