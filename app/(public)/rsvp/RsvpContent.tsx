@@ -75,7 +75,7 @@ export default function RsvpContent({
 
   const [form, setForm] = useState({
     name: "", email: "", phone: "", companions: [] as string[], message: "",
-    attendingEvents: ALL_EVENT_KEYS as string[],
+    attendingEvents: [] as string[],
   });
 
   function applyGuest(data: {
