@@ -107,7 +107,7 @@ Avant, tout le texte du site (dates, lieux, FAQ, photos de la galerie) était co
   - `app/admin/(dashboard)/` — toutes les pages admin existantes (Dashboard, RSVP, Invités, Galerie) déplacées dans ce groupe de routes pour partager la nav (`components/admin/AdminNav.tsx`) sans l'imposer à la page de login
 - **Contenu dynamique** :
   - Modèle Prisma `ContentSection` (clé + JSON) — une ligne par section éditable
-  - `lib/content/sections.ts` — schémas Zod + valeurs par défaut (= texte d'origine) pour 4 sections : `general` (noms, date, deadline RSVP, hashtag), `venues` (les 2 lieux), `event_faq`, `gallery_highlights` (cartes de la galerie)
+  - `lib/content/sections.ts` — schémas Zod + valeurs par défaut (= texte d'origine) pour 4 sections : `general` (noms, date, deadline RSVP, hashtag), `venues` (les 4 lieux/moments : cérémonie civile, vin d'honneur, cérémonie religieuse, soirée), `event_faq`, `gallery_highlights` (cartes de la galerie)
   - `lib/content.ts` — lecture des sections avec repli automatique sur les valeurs par défaut si la base n'a pas encore été modifiée
   - `app/api/admin/content/[key]/route.ts` — API GET/PUT pour chaque section
   - `app/api/admin/upload/route.ts` + `lib/cloudinary.ts` — upload d'images vers Cloudinary

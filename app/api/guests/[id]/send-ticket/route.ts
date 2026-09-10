@@ -44,7 +44,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       qrPngBuffer,
       coupleNames,
       weddingDateText: formatLongDateFr(general.weddingDate),
-      venueName: venues.ceremony.name,
+      venueName: venues.civilCeremony.name,
     });
 
     const updated = await prisma.guest.update({

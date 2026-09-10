@@ -33,24 +33,42 @@ const venueSchema = z.object({
 export type Venue = z.infer<typeof venueSchema>;
 
 export const venuesSchema = z.object({
-  ceremony: venueSchema,
-  reception: venueSchema,
+  civilCeremony: venueSchema,
+  cocktail: venueSchema,
+  religiousCeremony: venueSchema,
+  evening: venueSchema,
 });
 export type VenuesContent = z.infer<typeof venuesSchema>;
 
 export const venuesDefault: VenuesContent = {
-  ceremony: {
+  civilCeremony: {
     name: "Mairie d'Orsay",
-    address: "2 Rue de la Division Leclerc, 91400 Orsay",
-    timeText: "Accueil dès 10h00",
+    address: "2 Pl. du Général Leclerc, 91400 Orsay",
+    timeText: "Présence souhaitée dès 10h00",
     mapsUrl: "https://maps.app.goo.gl/kmw34DX4zkXmRB5h7",
     phone: "+2250000000000",
     image: "/mairie_orsay.webp",
   },
-  reception: {
-    name: "Etoile 91, Palais Groupe",
+  cocktail: {
+    name: "Église Vie et Paix",
+    address: "14 Rue Charles de Gaulle, 91400 Orsay",
+    timeText: "Présence souhaitée de 11h45 à 13h30",
+    mapsUrl: "https://www.google.com/maps/search/?api=1&query=14+Rue+Charles+de+Gaulle%2C+91400+Orsay",
+    phone: "+2250000000000",
+    image: "/hotel_de_ville.jpg",
+  },
+  religiousCeremony: {
+    name: "Église Vie et Paix",
+    address: "14 Rue Charles de Gaulle, 91400 Orsay",
+    timeText: "Présence souhaitée de 14h00 à 15h30",
+    mapsUrl: "https://www.google.com/maps/search/?api=1&query=14+Rue+Charles+de+Gaulle%2C+91400+Orsay",
+    phone: "+2250000000000",
+    image: "/hotel_de_ville.jpg",
+  },
+  evening: {
+    name: "Palais Groupe",
     address: "2 Rue Jules Guesde, 91130 Ris-Orangis",
-    // horaire pas encore arrêté
+    timeText: "Présence souhaitée dès 19h00",
     mapsUrl: "https://maps.app.goo.gl/uHbBxemjFjTj37A39",
     phone: "+2250000000000",
     image: "/lieu_reception.png",
@@ -66,7 +84,7 @@ export const eventFaqDefault: EventFaqContent = {
   items: [
     { q: "Peut-on venir avec des enfants ?", a: "Les enfants sont les bienvenus à la cérémonie civile. Par contre pour la cérémonie religieuse et la réception, il faut se référer à l'invitation reçue et au nombre de place qui vous sont attribuées sur le site internet." },
     { q: "Y a-t-il un dress code ?", a: "La tenue de soirée est recommandée. Les couleurs blanc et ivoire sont réservées aux mariés. Privilégiez des teintes élégantes — bleu nuit, rose, bordeaux ou doré seront parfaits." },
-    { q: "Où se garer ?", a: "Pour la cérémonie civile, un parking gratuit est disponible sur place à la mairie d'Orsay. Pour la cérémonie religieuse, un parking privé et gratuit est disponible en face du Palais Groupe." },
+    { q: "Où se garer ?", a: "Pour la cérémonie civile, un parking gratuit est disponible sur place à la mairie d'Orsay. Pour le vin d'honneur et la cérémonie religieuse à l'Église Vie et Paix, merci de vous garer dans les rues environnantes. Pour la soirée, un parking privé et gratuit est disponible en face du Palais Groupe." },
     { q: "Jusqu'à quelle heure dure la soirée ?", a: "La soirée se termine officiellement à 02h00 du matin." },
     { q: "Peut-on prendre des photos pendant la cérémonie ?", a: "Nous vous demandons de ranger vos téléphones pendant la cérémonie. Notre photographe immortalisera chaque instant. Après la cérémonie, photos libres !" },
   ],

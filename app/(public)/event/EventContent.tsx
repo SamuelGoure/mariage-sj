@@ -3,7 +3,7 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import Image from "next/image";
-import { MapPin, Clock, Car, Shirt, Heart, UtensilsCrossed, Baby, Navigation, Phone } from "lucide-react";
+import { MapPin, Clock, Car, Shirt, Heart, Music, UtensilsCrossed, Baby, Navigation, Phone, Sparkles } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { RingsIcon, FloralDivider, FloralCorner, WaveDivider } from "@/components/ui/decorations";
 import ParallaxImage from "@/components/ui/ParallaxImage";
@@ -30,6 +30,13 @@ function FadeIn({ children, className, delay = 0, direction = "up" }: {
     </motion.div>
   );
 }
+
+const venueCards = [
+  { key: "civilCeremony" as const, label: "Cérémonie civile", icon: Heart, color: "#e91e8c" },
+  { key: "cocktail" as const, label: "Vin d'honneur", icon: Music, color: "#4A90D9" },
+  { key: "religiousCeremony" as const, label: "Cérémonie religieuse", icon: Sparkles, color: "#e91e8c" },
+  { key: "evening" as const, label: "Soirée", icon: UtensilsCrossed, color: "#4A90D9" },
+];
 
 export default function EventContent({
   general, venues, faq,
@@ -77,93 +84,53 @@ export default function EventContent({
           </FadeIn>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-
-            {/* Cérémonie */}
-            <FadeIn direction="left">
-              <div className="rounded-3xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow group">
-                <div className="relative h-56 overflow-hidden">
-                  <Image
-                    src={venues.ceremony.image}
-                    alt="Salle de cérémonie"
-                    fill className="object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#1A2B5F]/70 to-transparent" />
-                  <div className="absolute bottom-4 left-4 flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-[#e91e8c] flex items-center justify-center">
-                      <Heart className="w-4 h-4 text-white fill-current" />
+            {venueCards.map(({ key, label, icon: Icon, color }, i) => {
+              const venue = venues[key];
+              return (
+                <FadeIn key={key} direction={i % 2 === 0 ? "left" : "right"}>
+                  <div className="rounded-3xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow group">
+                    <div className="relative h-56 overflow-hidden">
+                      <Image
+                        src={venue.image}
+                        alt={label}
+                        fill className="object-cover group-hover:scale-105 transition-transform duration-700"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#1A2B5F]/70 to-transparent" />
+                      <div className="absolute bottom-4 left-4 flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: color }}>
+                          <Icon className="w-4 h-4 text-white" />
+                        </div>
+                        <span className="text-white font-heading text-xl">{label}</span>
+                      </div>
                     </div>
-                    <span className="text-white font-heading text-xl">Cérémonie civile</span>
-                  </div>
-                </div>
-                <div className="bg-white p-6 flex flex-col gap-3">
-                  <h3 className="font-heading text-2xl text-[#1A2B5F]">{venues.ceremony.name}</h3>
-                  <div className="flex items-start gap-2 text-sm text-muted-foreground">
-                    <MapPin className="w-4 h-4 mt-0.5 text-[#e91e8c] shrink-0" />
-                    <span>{venues.ceremony.address}</span>
-                  </div>
-                  {venues.ceremony.timeText && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Clock className="w-4 h-4 text-[#e91e8c]" />
-                      <span>{venues.ceremony.timeText}</span>
+                    <div className="bg-white p-6 flex flex-col gap-3">
+                      <h3 className="font-heading text-2xl text-[#1A2B5F]">{venue.name}</h3>
+                      <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                        <MapPin className="w-4 h-4 mt-0.5 shrink-0" style={{ color }} />
+                        <span>{venue.address}</span>
+                      </div>
+                      {venue.timeText && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Clock className="w-4 h-4" style={{ color }} />
+                          <span>{venue.timeText}</span>
+                        </div>
+                      )}
+                      <div className="flex gap-2 mt-1">
+                        <a href={venue.mapsUrl} target="_blank" rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 text-xs font-semibold text-white px-3 py-1.5 rounded-full transition-opacity hover:opacity-90"
+                          style={{ backgroundColor: color }}>
+                          <Navigation className="w-3 h-3" /> Itinéraire
+                        </a>
+                        <a href={`tel:${venue.phone}`}
+                          className="flex items-center gap-1.5 text-xs font-semibold text-[#1A2B5F] bg-rose-50 px-3 py-1.5 rounded-full hover:bg-rose-100 transition-colors">
+                          <Phone className="w-3 h-3" /> Contact
+                        </a>
+                      </div>
                     </div>
-                  )}
-                  <div className="flex gap-2 mt-1">
-                    <a href={venues.ceremony.mapsUrl} target="_blank" rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 text-xs font-semibold text-white bg-[#e91e8c] px-3 py-1.5 rounded-full hover:bg-[#c4177a] transition-colors">
-                      <Navigation className="w-3 h-3" /> Itinéraire
-                    </a>
-                    <a href={`tel:${venues.ceremony.phone}`}
-                      className="flex items-center gap-1.5 text-xs font-semibold text-[#1A2B5F] bg-rose-50 px-3 py-1.5 rounded-full hover:bg-rose-100 transition-colors">
-                      <Phone className="w-3 h-3" /> Contact
-                    </a>
                   </div>
-                </div>
-              </div>
-            </FadeIn>
-
-            {/* Réception */}
-            <FadeIn direction="right">
-              <div className="rounded-3xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow group">
-                <div className="relative h-56 overflow-hidden">
-                  <Image
-                    src={venues.reception.image}
-                    alt="Salle de réception"
-                    fill className="object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#1A2B5F]/70 to-transparent" />
-                  <div className="absolute bottom-4 left-4 flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-[#4A90D9] flex items-center justify-center">
-                      <UtensilsCrossed className="w-4 h-4 text-white" />
-                    </div>
-                    <span className="text-white font-heading text-xl">Cérémonie réligieuse et réception</span>
-                  </div>
-                </div>
-                <div className="bg-white p-6 flex flex-col gap-3">
-                  <h3 className="font-heading text-2xl text-[#1A2B5F]">{venues.reception.name}</h3>
-                  <div className="flex items-start gap-2 text-sm text-muted-foreground">
-                    <MapPin className="w-4 h-4 mt-0.5 text-[#4A90D9] shrink-0" />
-                    <span>{venues.reception.address}</span>
-                  </div>
-                  {/* Horaire pas encore arrêté (cf. feature/updates) — pas de ligne affichée pour l'instant */}
-                  {venues.reception.timeText && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Clock className="w-4 h-4 text-[#4A90D9]" />
-                      <span>{venues.reception.timeText}</span>
-                    </div>
-                  )}
-                  <div className="flex gap-2 mt-1">
-                    <a href={venues.reception.mapsUrl} target="_blank" rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 text-xs font-semibold text-white bg-[#4A90D9] px-3 py-1.5 rounded-full hover:bg-[#3a7bc8] transition-colors">
-                      <Navigation className="w-3 h-3" /> Itinéraire
-                    </a>
-                    <a href={`tel:${venues.reception.phone}`}
-                      className="flex items-center gap-1.5 text-xs font-semibold text-[#1A2B5F] bg-blue-50 px-3 py-1.5 rounded-full hover:bg-blue-100 transition-colors">
-                      <Phone className="w-3 h-3" /> Contact
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </FadeIn>
+                </FadeIn>
+              );
+            })}
           </div>
         </div>
       </section>

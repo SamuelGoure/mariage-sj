@@ -186,11 +186,19 @@ function VenuesTab({ section }: { section: ReturnType<typeof useSection<VenuesCo
       <div className="grid md:grid-cols-2 gap-6">
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
           <h3 className="text-white font-semibold mb-4">Cérémonie civile</h3>
-          <VenueForm venue={data.ceremony} onChange={(v) => setData({ ...data, ceremony: v })} />
+          <VenueForm venue={data.civilCeremony} onChange={(v) => setData({ ...data, civilCeremony: v })} />
         </div>
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-          <h3 className="text-white font-semibold mb-4">Cérémonie religieuse / Réception</h3>
-          <VenueForm venue={data.reception} onChange={(v) => setData({ ...data, reception: v })} />
+          <h3 className="text-white font-semibold mb-4">Vin d&apos;honneur</h3>
+          <VenueForm venue={data.cocktail} onChange={(v) => setData({ ...data, cocktail: v })} />
+        </div>
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+          <h3 className="text-white font-semibold mb-4">Cérémonie religieuse</h3>
+          <VenueForm venue={data.religiousCeremony} onChange={(v) => setData({ ...data, religiousCeremony: v })} />
+        </div>
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+          <h3 className="text-white font-semibold mb-4">Soirée</h3>
+          <VenueForm venue={data.evening} onChange={(v) => setData({ ...data, evening: v })} />
         </div>
       </div>
       <SaveButton onClick={save} saving={saving} saved={saved} error={error} />
