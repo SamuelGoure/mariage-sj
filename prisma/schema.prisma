@@ -14,6 +14,7 @@ model Rsvp {
   attending   Boolean
   guestCount  Int      @default(1) @map("guest_count")
   companions  Json?    @map("companions")
+  attendingEvents Json? @map("attending_events")
   message     String?  @db.Text
   createdAt   DateTime @default(now()) @map("created_at")
   guest       Guest?   @relation(fields: [guestId], references: [id])

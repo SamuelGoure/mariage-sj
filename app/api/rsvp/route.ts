@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guard";
 
+const EVENT_KEYS = ["civilCeremony", "cocktail", "religiousCeremony", "evening"];
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, email, phone, attending, companions, message, guestToken } = body;
+    const { name, email, phone, attending, companions, message, attendingEvents, guestToken } = body;
 
     if (!name?.trim() || attending === undefined) {
       return NextResponse.json({ error: "Champs requis manquants." }, { status: 400 });
@@ -27,6 +29,10 @@ export async function POST(req: NextRequest) {
       ? companions.map((c: string) => c.trim()).filter(Boolean)
       : [];
 
+    const cleanAttendingEvents: string[] = Boolean(attending) && Array.isArray(attendingEvents)
+      ? attendingEvents.filter((k: string) => EVENT_KEYS.includes(k))
+      : [];
+
     const maxCompanions = Math.max(0, seatsAllowed - 1);
     if (cleanCompanions.length > maxCompanions) {
       return NextResponse.json(
@@ -42,6 +48,7 @@ export async function POST(req: NextRequest) {
       attending:  Boolean(attending),
       guestCount: attending ? 1 + cleanCompanions.length : 0,
       companions: cleanCompanions,
+      attendingEvents: cleanAttendingEvents,
       message:    message?.trim() || null,
     };
 

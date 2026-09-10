@@ -12,6 +12,7 @@ interface RsvpItem {
   attending: boolean;
   guestCount: number;
   companions: string[] | null;
+  attendingEvents: string[] | null;
   email: string | null;
   phone: string | null;
   message: string | null;
@@ -31,6 +32,30 @@ const STATUS_COLOR: Record<GuestStatus, string> = {
   CONFIRMED: "bg-emerald-100 text-emerald-700",
   DECLINED: "bg-red-100 text-red-700",
 };
+
+const EVENT_LABEL: Record<string, string> = {
+  civilCeremony: "Mairie",
+  cocktail: "Vin d'honneur",
+  religiousCeremony: "Église",
+  evening: "Soirée",
+};
+const EVENT_KEYS = Object.keys(EVENT_LABEL);
+
+function EventsBadges({ events }: { events: string[] | null }) {
+  const keys = events && events.length > 0 ? events : null;
+  if (!keys || keys.length === EVENT_KEYS.length) {
+    return <span className="text-blue-200">Tous les moments</span>;
+  }
+  return (
+    <div className="flex flex-wrap gap-1">
+      {keys.map((k) => (
+        <span key={k} className="px-2 py-0.5 rounded-full bg-[#e91e8c]/15 text-[#F4A7B9] text-[11px] whitespace-nowrap">
+          {EVENT_LABEL[k] ?? k}
+        </span>
+      ))}
+    </div>
+  );
+}
 
 export default function AdminRsvpPage() {
   const [rsvps, setRsvps] = useState<RsvpItem[]>([]);
@@ -71,7 +96,7 @@ export default function AdminRsvpPage() {
     );
 
   function exportCsv() {
-    const headers = ["ID", "Code", "Nom", "Présent", "Nb personnes", "Accompagnants", "Email", "Téléphone", "Message", "Date"];
+    const headers = ["ID", "Code", "Nom", "Présent", "Nb personnes", "Accompagnants", "Moments", "Email", "Téléphone", "Message", "Date"];
     const rows = rsvps.map((r) => [
       r.id,
       r.guest?.token ?? "",
@@ -79,6 +104,9 @@ export default function AdminRsvpPage() {
       r.attending ? "Oui" : "Non",
       r.guestCount,
       (r.companions ?? []).join(" | "),
+      !r.attendingEvents || r.attendingEvents.length === 0 || r.attendingEvents.length === EVENT_KEYS.length
+        ? "Tous les moments"
+        : r.attendingEvents.map((k) => EVENT_LABEL[k] ?? k).join(" | "),
       r.email ?? "",
       r.phone ?? "",
       r.message ?? "",
@@ -171,7 +199,7 @@ export default function AdminRsvpPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-white/10 text-blue-300 text-left">
-                    {["Code", "Invité", "Présence", "Personnes", "Accompagnants", "Contact", "Statut", "Date"].map((h) => (
+                    {["Code", "Invité", "Présence", "Personnes", "Accompagnants", "Moments", "Contact", "Statut", "Date"].map((h) => (
                       <th key={h} className="px-6 py-4 font-medium whitespace-nowrap">{h}</th>
                     ))}
                   </tr>
@@ -203,6 +231,9 @@ export default function AdminRsvpPage() {
                       </td>
                       <td className="px-6 py-4 text-blue-200 text-xs max-w-xs">
                         {(r.companions ?? []).join(", ") || "—"}
+                      </td>
+                      <td className="px-6 py-4 text-xs max-w-[220px]">
+                        {r.attending ? <EventsBadges events={r.attendingEvents} /> : "—"}
                       </td>
                       <td className="px-6 py-4 text-blue-200 text-xs max-w-[200px]">
                         {r.email ? (

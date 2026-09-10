@@ -19,6 +19,15 @@ import type { GeneralContent } from "@/lib/content/sections";
 
 type Step = "code" | "form" | "success" | "decline";
 
+const EVENT_OPTIONS = [
+  { key: "civilCeremony", label: "Mairie" },
+  { key: "cocktail", label: "Vin d'honneur" },
+  { key: "religiousCeremony", label: "Église" },
+  { key: "evening", label: "Soirée" },
+] as const;
+type EventKey = typeof EVENT_OPTIONS[number]["key"];
+const ALL_EVENT_KEYS: EventKey[] = EVENT_OPTIONS.map((e) => e.key);
+
 function FadeIn({ children, className, delay = 0, direction = "up" }: {
   children: React.ReactNode; className?: string; delay?: number;
   direction?: "up" | "left" | "right" | "none";
@@ -66,6 +75,7 @@ export default function RsvpContent({
 
   const [form, setForm] = useState({
     name: "", email: "", phone: "", companions: [] as string[], message: "",
+    attendingEvents: ALL_EVENT_KEYS as string[],
   });
 
   function applyGuest(data: {
@@ -73,7 +83,7 @@ export default function RsvpContent({
     seatsAllowed?: number;
     rsvp?: {
       name: string; attending: boolean; email: string | null; phone: string | null;
-      companions: unknown; message: string | null;
+      companions: unknown; message: string | null; attendingEvents?: unknown;
     } | null;
   }) {
     if (data.seatsAllowed) setSeatsAllowed(data.seatsAllowed);
@@ -86,12 +96,30 @@ export default function RsvpContent({
         phone: data.rsvp.phone ?? "",
         companions: Array.isArray(data.rsvp.companions) ? (data.rsvp.companions as string[]) : [],
         message: data.rsvp.message ?? "",
+        attendingEvents: Array.isArray(data.rsvp.attendingEvents) && data.rsvp.attendingEvents.length > 0
+          ? (data.rsvp.attendingEvents as string[])
+          : ALL_EVENT_KEYS,
       });
       setAttending(data.rsvp.attending);
     } else {
       setGuestName(data.name);
       setForm(f => ({ ...f, name: data.name }));
     }
+  }
+
+  function toggleEvent(key: string) {
+    setForm(f => ({
+      ...f,
+      attendingEvents: f.attendingEvents.includes(key)
+        ? f.attendingEvents.filter(k => k !== key)
+        : [...f.attendingEvents, key],
+    }));
+  }
+  function toggleAllEvents() {
+    setForm(f => ({
+      ...f,
+      attendingEvents: f.attendingEvents.length === ALL_EVENT_KEYS.length ? [] : ALL_EVENT_KEYS,
+    }));
   }
 
   // Pré-remplir depuis le token présent dans le lien
@@ -167,6 +195,7 @@ export default function RsvpContent({
         body: JSON.stringify({
           name: form.name, email: form.email, phone: form.phone, attending,
           companions: form.companions, message: form.message,
+          attendingEvents: attending ? form.attendingEvents : undefined,
           guestToken: guestToken || undefined,
         }),
       });
@@ -264,8 +293,7 @@ export default function RsvpContent({
                     />
                     <Input
                       value={codeInput}
-                      onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
-                      maxLength={4}
+                      onChange={(e) => setCodeInput(e.target.value.replace(/\s/g, "").toUpperCase().slice(0, 4))}
                       placeholder="XXXX"
                       autoFocus
                       className="text-center text-2xl tracking-[0.5em] font-semibold uppercase border-rose-200 focus-visible:ring-[#e91e8c] rounded-xl h-14"
@@ -371,6 +399,46 @@ export default function RsvpContent({
                         </div>
                       )}
                     </div>
+
+                    {/* Moments de présence */}
+                    {attending && (
+                      <div className="bg-white rounded-3xl p-7 border border-rose-100 shadow-sm">
+                        <div className="flex items-center gap-2.5 mb-1">
+                          <div className="w-8 h-8 rounded-full bg-[#e91e8c]/10 flex items-center justify-center shrink-0">
+                            <Clock className="w-4 h-4 text-[#e91e8c]" />
+                          </div>
+                          <h3 className="font-heading text-2xl text-[#1A2B5F]">Vos moments de présence</h3>
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-5 ml-10">
+                          Cochez les moments où l&apos;on pourra compter sur votre présence (et celle de vos accompagnants).
+                        </p>
+
+                        <label className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#FDF8F5] cursor-pointer mb-3 select-none">
+                          <input
+                            type="checkbox"
+                            checked={form.attendingEvents.length === ALL_EVENT_KEYS.length}
+                            onChange={toggleAllEvents}
+                            className="w-5 h-5 accent-[#e91e8c] rounded"
+                          />
+                          <span className="text-sm font-semibold text-[#1A2B5F]">Tout sélectionner</span>
+                        </label>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {EVENT_OPTIONS.map(({ key, label }) => (
+                            <label key={key}
+                              className="flex items-center gap-3 px-4 py-3 rounded-xl border border-rose-100 cursor-pointer select-none hover:border-[#e91e8c]/40 transition-colors">
+                              <input
+                                type="checkbox"
+                                checked={form.attendingEvents.includes(key)}
+                                onChange={() => toggleEvent(key)}
+                                className="w-5 h-5 accent-[#e91e8c] rounded"
+                              />
+                              <span className="text-sm text-[#1A2B5F]">{label}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Accompagnants */}
                     {attending && (
