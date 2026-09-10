@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Menu, X, Heart } from "lucide-react";
 
 // /story, /gifts et /gallery sont désactivées pour l'instant (pas encore prêtes) — voir leur page.tsx
@@ -111,44 +111,36 @@ export default function Navbar() {
         </div>
       </motion.nav>
 
-      {/* Mobile menu */}
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            className="fixed inset-0 z-40 bg-white flex flex-col items-center justify-center gap-8 overflow-y-auto py-20"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+      {/* Mobile menu — pas de Framer Motion ici : sur Safari iOS, animer opacity/scale
+          sur un position:fixed plein écran (surtout combiné à overflow-y-auto) déclenche
+          un bug de compositing GPU connu qui peut peindre l'overlay tout noir ou invisible.
+          Une simple transition CSS d'opacité évite ce comportement. */}
+      <div
+        aria-hidden={!open}
+        className={`fixed inset-0 z-40 bg-white flex flex-col items-center justify-center gap-8 transition-opacity duration-200 ${
+          open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+      >
+        {links.map(({ href, label }) => (
+          <Link
+            key={href}
+            href={href}
+            onClick={() => setOpen(false)}
+            className={`font-heading text-4xl tracking-wide ${
+              pathname === href ? "text-[#e91e8c]" : "text-[#1A2B5F]"
+            } hover:text-[#e91e8c] transition-colors`}
           >
-            {links.map(({ href, label }, i) => (
-              <motion.div
-                key={href}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.06 }}
-              >
-                <Link
-                  href={href}
-                  onClick={() => setOpen(false)}
-                  className={`font-heading text-4xl tracking-wide ${
-                    pathname === href ? "text-[#e91e8c]" : "text-[#1A2B5F]"
-                  } hover:text-[#e91e8c] transition-colors`}
-                >
-                  {label}
-                </Link>
-              </motion.div>
-            ))}
-            <Link
-              href="/rsvp"
-              onClick={() => setOpen(false)}
-              className="mt-4 px-8 py-3 rounded-full font-medium text-white bg-[#e91e8c] hover:bg-[#c4177a] transition-colors"
-            >
-              Confirmer ma présence
-            </Link>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            {label}
+          </Link>
+        ))}
+        <Link
+          href="/rsvp"
+          onClick={() => setOpen(false)}
+          className="mt-4 px-8 py-3 rounded-full font-medium text-white bg-[#e91e8c] hover:bg-[#c4177a] transition-colors"
+        >
+          Confirmer ma présence
+        </Link>
+      </div>
     </>
   );
 }
